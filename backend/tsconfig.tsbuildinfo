@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/config/db.ts","./src/controllers/auth.ts","./src/models/content.ts","./src/models/link.ts","./src/models/tag.ts","./src/models/user.ts","./src/routes/auth.ts","./src/routes/link.ts","./src/routes/usercontent.ts","./src/zod-schema/auth.ts"],"version":"5.8.3"}
