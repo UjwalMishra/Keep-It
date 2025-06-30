@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  deleteContentController,
   getContentController,
   postContentController,
 } from "../controllers/Content";
@@ -8,11 +9,16 @@ import { authorizationMiddleware } from "../middlewares/Authorization";
 const router = Router();
 
 //post content
-console.log("post content hit");
+router.post("/post-content", authorizationMiddleware, postContentController);
 
-router.post("/postContent", authorizationMiddleware, postContentController);
+//get all content
+router.get("/get-all-content", authorizationMiddleware, getContentController);
 
-//get content
-router.get("/getAllContent", authorizationMiddleware, getContentController);
+//delete content
+router.delete(
+  "/delete-content",
+  authorizationMiddleware,
+  deleteContentController
+);
 
 export default router;

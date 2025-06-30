@@ -12,7 +12,6 @@ export const postContentController = async (
 ): Promise<any> => {
   try {
     const contentData = req.body;
-    console.log("post conetent hit");
     const { success } = contentZodSchema.safeParse(contentData);
     if (!success) {
       return res.status(411).json({
@@ -58,6 +57,39 @@ export const getContentController = async (
       data: content,
     });
   } catch (err) {
+    return res.status(500).json({
+      success: false,
+      msg: "Server error",
+    });
+  }
+};
+
+export const deleteContentController = async (
+  req: ContentRequest,
+  res: Response
+): Promise<any> => {
+  try {
+    const { contentId } = req.body;
+    const userId = req.userId;
+    const isContent = await Content.findById({ _id: contentId });
+    if (!isContent) {
+      return res.status(403).json({
+        success: false,
+        msg: "Content of the provided content id not found",
+      });
+    }
+    await Content.deleteMany({
+      _id: contentId,
+      userId: userId,
+    });
+
+    return res.status(200).json({
+      success: true,
+      msg: "Content deleted successfully",
+    });
+  } catch (err) {
+    console.log(err);
+
     return res.status(500).json({
       success: false,
       msg: "Server error",

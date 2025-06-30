@@ -12,8 +12,6 @@ connectDB();
 
 //routes
 app.use("/api/v1/auth", authRoutes);
-console.log("post content hit");
-
 app.use("/api/v1/content", contentRoutes);
 
 app.listen(3000, () => {
