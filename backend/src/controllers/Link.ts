@@ -7,12 +7,6 @@ interface ContentRequest extends Request {
   userId?: string;
 }
 
-//bug here
-const randomString = generateRandomString({
-  length: 16,
-  charSetType: CharacterSetType.Alphanumeric,
-});
-
 export const generateShareLinkController = async (
   req: ContentRequest,
   res: Response
@@ -34,6 +28,11 @@ export const generateShareLinkController = async (
         link: isLinkExist.hash,
       });
     }
+
+    let randomString = generateRandomString({
+      length: 16,
+      charSetType: CharacterSetType.Alphanumeric,
+    });
 
     const shareableLink = await Link.create({
       userId: req.userId,
