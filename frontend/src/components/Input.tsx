@@ -1,17 +1,17 @@
 export default function Input({
-  onChange,
   placeholder,
+  ref,
 }: {
   placeholder: string;
-  onChange: () => void;
+  ref: any;
 }) {
   return (
     <div className="my-2 w-full">
       <input
         type="text"
-        className="px-4 py-2 border rounded-md my-1 w-full"
+        className="px-4 py-2 border rounded-md my-1  w-full"
         placeholder={placeholder}
-        onChange={onChange}
+        ref={ref}
       ></input>
     </div>
   );
