@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { connectDB } from "./config/db";
 //routes
 import authRoutes from "./routes/Auth";
@@ -12,6 +13,7 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 //middlewares
 app.use(express.json());
+app.use(cors());
 
 //db connection
 connectDB();
