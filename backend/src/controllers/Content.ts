@@ -12,6 +12,8 @@ export const postContentController = async (
 ): Promise<any> => {
   try {
     const contentData = req.body;
+    console.log(contentData);
+
     const { success } = contentZodSchema.safeParse(contentData);
     if (!success) {
       return res.status(411).json({
