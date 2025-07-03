@@ -1,8 +1,40 @@
+import { useRef, useState } from "react";
 import { CloseIcon } from "../icons/CloseIcon";
 import Input from "./Input";
 import { Button } from "./ui/Button";
+import axios from "axios";
+import { BACKEND_URL } from "../config";
+
+enum ContentType {
+  YouTube = "youtube",
+  X = "x",
+}
 
 export const CreateContentModal = ({ open, onClose }) => {
+  const [type, setType] = useState(ContentType.YouTube);
+
+  const titleRef = useRef<any>("");
+  const linkRef = useRef<any>("");
+
+  async function addContentFxn() {
+    const title = titleRef.current.value;
+    const link = linkRef.current.value;
+
+    const token = localStorage.getItem("token");
+    await axios.post(
+      `${BACKEND_URL}/content/post-content`,
+      {
+        title,
+        link,
+        type,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token} `,
+        },
+      }
+    );
+  }
   return (
     <div>
       {open && (
@@ -18,10 +50,33 @@ export const CreateContentModal = ({ open, onClose }) => {
               </div>
             </div>
             <div>
-              <Input placeholder="Title" onChange={() => {}} />
-              <Input placeholder="Link" onChange={() => {}} />
+              <Input placeholder="Title" ref={titleRef} />
+              <Input placeholder="Link" ref={linkRef} />
+              <div className="flex justify-around px-8">
+                <div className="font-bold text-[20px]">Type : </div>
+                <Button
+                  text="Youtube"
+                  size="lg"
+                  variant={
+                    type === ContentType.YouTube ? "primary" : "secondary"
+                  }
+                  onClick={() => setType(ContentType.YouTube)}
+                />
+                <Button
+                  text="X"
+                  size="lg"
+                  variant={type === ContentType.X ? "primary" : "secondary"}
+                  onClick={() => setType(ContentType.X)}
+                />
+              </div>
+
               <div className="flex justify-center">
-                <Button variant="primary" text="Submit" size="lg" />
+                <Button
+                  variant="primary"
+                  text="Submit"
+                  size="lg"
+                  onClick={addContentFxn}
+                />
               </div>
             </div>
           </div>

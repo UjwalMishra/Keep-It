@@ -2,7 +2,7 @@ import { useRef } from "react";
 import Input from "../components/Input";
 import { Button } from "../components/ui/Button";
 import axios from "axios";
-import { BACKEND_URL } from "../confit";
+import { BACKEND_URL } from "../config";
 
 export default function Signup() {
   const usernameRef = useRef<any>("");
@@ -11,7 +11,7 @@ export default function Signup() {
   async function signupfxn() {
     const username = usernameRef.current.value;
     const password = passwordRef.current.value;
-    await axios.post(`${BACKEND_URL}/api/v1/auth/signup`, {
+    await axios.post(`${BACKEND_URL}/auth/signup`, {
       username,
       password,
     });
