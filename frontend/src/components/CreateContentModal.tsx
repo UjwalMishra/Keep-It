@@ -5,14 +5,13 @@ import { Button } from "./ui/Button";
 import axios from "axios";
 import { BACKEND_URL } from "../config";
 
-enum ContentType {
+export enum ContentType {
   YouTube = "youtube",
   X = "x",
 }
 
-export const CreateContentModal = ({ open, onClose }) => {
+export const CreateContentModal = ({ open, onClose }: any) => {
   const [type, setType] = useState(ContentType.YouTube);
-
   const titleRef = useRef<any>("");
   const linkRef = useRef<any>("");
 
@@ -23,11 +22,7 @@ export const CreateContentModal = ({ open, onClose }) => {
     const token = localStorage.getItem("token");
     await axios.post(
       `${BACKEND_URL}/content/post-content`,
-      {
-        title,
-        link,
-        type,
-      },
+      { title, link, type },
       {
         headers: {
           Authorization: `Bearer ${token} `,
@@ -36,28 +31,34 @@ export const CreateContentModal = ({ open, onClose }) => {
     );
     onClose();
   }
+
   return (
-    <div>
+    <>
       {open && (
-        <div className="w-screen h-screen bg-black/50 backdrop-blur-sm fixed top-0 left-0 flex justify-center items-center z-10">
-          <div className="h-[450px] w-[400px] bg-white rounded-xl shadow-xl border border-slate-300 flex flex-col">
-            <div className="flex justify-between py-2 px-3">
-              <div>Add Content</div>
-              <div
-                className="text-xl hover:cursor-pointer hover:scale-110 transition-all duration-200"
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity duration-300">
+          <div className="w-[400px] bg-white rounded-2xl shadow-2xl p-6 animate-fade-in">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">Add Content</h2>
+              <button
+                className="text-gray-500 hover:text-gray-700 transition-transform hover:scale-110"
                 onClick={onClose}
               >
                 <CloseIcon />
-              </div>
+              </button>
             </div>
-            <div>
+
+            {/* Form */}
+            <div className="space-y-4">
               <Input placeholder="Title" ref={titleRef} />
               <Input placeholder="Link" ref={linkRef} />
-              <div className="flex justify-around px-8">
-                <div className="font-bold text-[20px]">Type : </div>
+
+              {/* Type selector */}
+              <div className="flex items-center justify-center gap-4 pt-2">
+                <span className="font-medium text-gray-700">Type:</span>
                 <Button
-                  text="Youtube"
-                  size="lg"
+                  text="YouTube"
+                  size="md"
                   variant={
                     type === ContentType.YouTube ? "primary" : "secondary"
                   }
@@ -65,13 +66,14 @@ export const CreateContentModal = ({ open, onClose }) => {
                 />
                 <Button
                   text="X"
-                  size="lg"
+                  size="md"
                   variant={type === ContentType.X ? "primary" : "secondary"}
                   onClick={() => setType(ContentType.X)}
                 />
               </div>
 
-              <div className="flex justify-center">
+              {/* Submit button */}
+              <div className="pt-4 flex justify-center">
                 <Button
                   variant="primary"
                   text="Submit"
@@ -83,6 +85,6 @@ export const CreateContentModal = ({ open, onClose }) => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };

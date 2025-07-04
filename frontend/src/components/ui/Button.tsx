@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 
 export interface ButtonProps {
-  variant: "primary" | "secondary";
+  variant: "primary" | "secondary" | "normal";
   text: string;
   size: "sm" | "md" | "lg";
   startIcon?: ReactElement;
@@ -13,6 +13,7 @@ export interface ButtonProps {
 const variantStyles = {
   primary: "bg-primary-button text-white",
   secondary: "bg-secondary-button text-black",
+  normal: "text-black",
 };
 
 const defaultStyle = "rounded-md flex items-center cursor-pointer";

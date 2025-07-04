@@ -37,11 +37,11 @@ export const Card = ({ title, link, type }: CardProps) => {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 w-[380px] border border-gray-100 overflow-hidden group">
+    <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 w-[380px]  border-gray- overflow-hidden group ">
       {/* Header */}
-      <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-3">
+      <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 ">
+        <div className="flex justify-between items-center ">
+          <div className="flex items-center space-x-3 ">
             <div className="p-2 bg-white rounded-lg shadow-sm">
               <ShareIcon size="lg" />
             </div>
@@ -71,10 +71,10 @@ export const Card = ({ title, link, type }: CardProps) => {
       </div>
 
       {/* Content */}
-      <div className="p-6">
-        <div className="w-full h-[250px] rounded-lg overflow-auto">
+      <div className="p-6 ">
+        <div className="w-full h-[250px] rounded-lg overflow-auto ">
           {type === "x" && (
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center ">
               <div className="w-full h-full max-w-[320px] mx-auto scrollbar-thin scrollbar-thumb-gray-50 scrollbar-track-gray-50 hover:scrollbar-thumb-gray-100">
                 <XEmbed url={link} />
               </div>
