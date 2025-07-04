@@ -6,9 +6,12 @@ import { Card } from "../components/ui/Card";
 import { CreateContentModal } from "../components/CreateContentModal";
 import { useState } from "react";
 import Sidebar from "../components/Sidebar";
+import { useContent } from "../hooks/useContent";
 
 export const Dashboard = () => {
   const [modalOpen, setModalOpen] = useState(false);
+
+  const contents = useContent();
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 relative">
@@ -48,26 +51,9 @@ export const Dashboard = () => {
 
         {/* Cards grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          <Card
-            title="Raftaar"
-            link="https://www.youtube.com/watch?v=XCIYHCXQoxQ&list=RDXCIYHCXQoxQ&start_radio=1"
-            type="youtube"
-          />
-          <Card
-            title="Raftaar"
-            link="https://www.youtube.com/watch?v=XCIYHCXQoxQ&list=RDXCIYHCXQoxQ&start_radio=1"
-            type="youtube"
-          />
-          <Card
-            title="Raftaar"
-            link="https://www.youtube.com/watch?v=XCIYHCXQoxQ&list=RDXCIYHCXQoxQ&start_radio=1"
-            type="youtube"
-          />
-          <Card
-            title="Mussu"
-            link="https://x.com/smitadeshmukh/status/1940341545745723674"
-            type="x"
-          />
+          {contents.map(({ title, link, type }) => (
+            <Card title={title} link={link} type={type} />
+          ))}
         </div>
       </div>
     </div>

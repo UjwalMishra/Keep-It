@@ -34,6 +34,7 @@ export const CreateContentModal = ({ open, onClose }) => {
         },
       }
     );
+    onClose();
   }
   return (
     <div>
