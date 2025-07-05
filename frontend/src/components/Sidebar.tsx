@@ -99,6 +99,33 @@ export default function Sidebar({
             <Button size="md" variant="normal" text="X" onClick={() => {}} />
           </div>
         </div>
+        {/* Instagram */}
+        <div
+          className={`group relative overflow-hidden rounded-lg transition-all duration-300 hover:shadow-md cursor-pointer ${
+            type === "instagram"
+              ? "bg-gradient-to-r from-red-100 to-orange-100 shadow-inner"
+              : ""
+          }`}
+          onClick={() => setType("instagram")}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div
+            className={`absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-red-500 to-orange-500 transform transition-transform duration-300 ${
+              type === "instagram"
+                ? "translate-x-0"
+                : "-translate-x-full group-hover:translate-x-0"
+            }`}
+          />
+          <div className="flex items-center ml-4">
+            <YtIcon />
+            <Button
+              size="md"
+              variant="normal"
+              text="Instagram"
+              onClick={() => {}}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Footer decoration */}

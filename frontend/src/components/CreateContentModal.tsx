@@ -9,6 +9,7 @@ import { BACKEND_URL } from "../config";
 export enum ContentType {
   YouTube = "youtube",
   X = "x",
+  Instagram = "instagram",
 }
 
 interface createContentProps {
@@ -81,6 +82,14 @@ export const CreateContentModal = ({
                   size="md"
                   variant={type === ContentType.X ? "primary" : "secondary"}
                   onClick={() => setType(ContentType.X)}
+                />
+                <Button
+                  text="Instagram"
+                  size="md"
+                  variant={
+                    type === ContentType.Instagram ? "primary" : "secondary"
+                  }
+                  onClick={() => setType(ContentType.Instagram)}
                 />
               </div>
 

@@ -1,4 +1,4 @@
-import { XEmbed } from "react-social-media-embed";
+import { InstagramEmbed, XEmbed } from "react-social-media-embed";
 import DeleteIcon from "../../icons/DeleteIcon";
 import ArrowIcon from "../../icons/ArrowIcon";
 import XIcons from "../../icons/XIcons";
@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 interface CardProps {
   title: string;
   link: string;
-  type: "x" | "youtube";
+  type: "x" | "youtube" | "instagram";
   id: string;
   refresh: () => void;
 }
@@ -106,6 +106,7 @@ export const Card = ({ title, link, type, id, refresh }: CardProps) => {
               </div>
             </div>
           )}
+
           {type === "youtube" && (
             <iframe
               width="100%"
@@ -117,6 +118,13 @@ export const Card = ({ title, link, type, id, refresh }: CardProps) => {
               allowFullScreen
               className="rounded-lg"
             />
+          )}
+          {type === "instagram" && (
+            <div className="w-full h-full flex items-center justify-center ">
+              <div className="w-full h-full max-w-[320px] mx-auto scrollbar-thin scrollbar-thumb-gray-50 scrollbar-track-gray-50 hover:scrollbar-thumb-gray-100">
+                <InstagramEmbed url={link} />
+              </div>
+            </div>
           )}
         </div>
       </div>
