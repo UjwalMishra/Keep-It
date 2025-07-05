@@ -5,12 +5,23 @@ import { Button } from "./ui/Button";
 import axios from "axios";
 import { BACKEND_URL } from "../config";
 
+//@ts-ignore
 export enum ContentType {
   YouTube = "youtube",
   X = "x",
 }
 
-export const CreateContentModal = ({ open, onClose }: any) => {
+interface createContentProps {
+  open: boolean;
+  onClose: () => void;
+  refresh: () => void;
+}
+
+export const CreateContentModal = ({
+  open,
+  onClose,
+  refresh,
+}: createContentProps) => {
   const [type, setType] = useState(ContentType.YouTube);
   const titleRef = useRef<any>("");
   const linkRef = useRef<any>("");
@@ -29,6 +40,7 @@ export const CreateContentModal = ({ open, onClose }: any) => {
         },
       }
     );
+    refresh();
     onClose();
   }
 
@@ -41,7 +53,7 @@ export const CreateContentModal = ({ open, onClose }: any) => {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-800">Add Content</h2>
               <button
-                className="text-gray-500 hover:text-gray-700 transition-transform hover:scale-110"
+                className=" transition-transform hover:scale-110 text-red-500 font-extrabold bg-gray-200 rounded-lg p-1 cursor-pointer"
                 onClick={onClose}
               >
                 <CloseIcon />

@@ -1,14 +1,21 @@
-import { ShareIcon } from "../../icons/ShareIcon";
-import { AddIcon } from "../../icons/AddIcon";
 import { XEmbed } from "react-social-media-embed";
+import DeleteIcon from "../../icons/DeleteIcon";
+import ArrowIcon from "../../icons/ArrowIcon";
+import XIcons from "../../icons/XIcons";
+import YtIcon from "../../icons/YtIcon";
+import axios from "axios";
+import { BACKEND_URL } from "../../config";
+import toast from "react-hot-toast";
 
 interface CardProps {
   title: string;
   link: string;
   type: "x" | "youtube";
+  id: string;
+  refresh: () => void;
 }
 
-export const Card = ({ title, link, type }: CardProps) => {
+export const Card = ({ title, link, type, id, refresh }: CardProps) => {
   function getYouTubeEmbedLink(link: string): string {
     try {
       const url = new URL(link);
@@ -36,14 +43,30 @@ export const Card = ({ title, link, type }: CardProps) => {
     ytLink = getYouTubeEmbedLink(link);
   }
 
+  async function deletefxn() {
+    const token = localStorage.getItem("token");
+
+    await axios.delete(`${BACKEND_URL}/content/delete-content`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      data: {
+        contentId: id,
+      },
+    });
+    refresh();
+    toast("Deleted!");
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 w-[380px]  border-gray- overflow-hidden group ">
       {/* Header */}
       <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 ">
         <div className="flex justify-between items-center ">
           <div className="flex items-center space-x-3 ">
-            <div className="p-2 bg-white rounded-lg shadow-sm">
-              <ShareIcon size="lg" />
+            <div className="rounded-lg text-xl shadow-sm">
+              {type === "x" && <XIcons />}
+              {type === "youtube" && <YtIcon />}
             </div>
             <div>
               <h3 className="text-gray-800 font-semibold text-lg leading-tight">
@@ -55,17 +78,20 @@ export const Card = ({ title, link, type }: CardProps) => {
             </div>
           </div>
           <div className="flex items-center space-x-2 opacity-70 group-hover:opacity-100 transition-opacity">
-            <button className="p-2 hover:bg-white rounded-lg transition-colors">
-              <AddIcon size="lg" />
-            </button>
             <a
               href={link}
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 hover:bg-white rounded-lg transition-colors"
             >
-              <ShareIcon size="lg" />
+              <ArrowIcon />
             </a>
+            <button
+              className="p-2 hover:bg-white rounded-lg transition-colors cursor-pointer"
+              onClick={deletefxn}
+            >
+              <DeleteIcon />
+            </button>
           </div>
         </div>
       </div>

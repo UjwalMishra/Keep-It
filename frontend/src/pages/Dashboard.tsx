@@ -11,9 +11,12 @@ import axios from "axios";
 import { BACKEND_URL } from "../config";
 import copy from "copy-to-clipboard";
 import { toast } from "react-hot-toast";
+import { getDecodedToken } from "../utils/decode";
+import UserIcon from "../icons/UserIcon";
 
 export const Dashboard = () => {
   const [type, setType] = useState("All");
+
   const [modalOpen, setModalOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -25,11 +28,16 @@ export const Dashboard = () => {
     }
   }, []);
 
-  let contents: any[] = [];
-  if (token) {
-    contents = useContent();
-  }
+  const user = getDecodedToken();
 
+  let contents: any[] = [];
+  let refresh = () => {};
+
+  if (token) {
+    const contentHook = useContent();
+    contents = contentHook.contents;
+    refresh = contentHook.refresh;
+  }
   console.log(type);
 
   const filteredContent =
@@ -49,7 +57,7 @@ export const Dashboard = () => {
         },
       }
     );
-    copy(`http://localhost:5173/api/v1/link/share/${shareLink.data.link}`);
+    copy(`http://localhost:5173/share/${shareLink.data.link}`);
     toast("Copied!!!");
   }
 
@@ -57,7 +65,7 @@ export const Dashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900 relative font-sans">
       {/* Sidebar */}
       <div className=" border-r border-gray-200 bg-white shadow-md fixed h-full">
-        <Sidebar setType={setType} />
+        <Sidebar setType={setType} type={type} />
       </div>
 
       {/* Main content */}
@@ -66,12 +74,16 @@ export const Dashboard = () => {
         <CreateContentModal
           open={modalOpen}
           onClose={() => setModalOpen(false)}
+          refresh={refresh}
         />
 
         {/* Navbar */}
         <div className="sticky top-0  bg-white/80 backdrop-blur-lg rounded-xl px-6 py-4 shadow-md flex justify-between items-center mb-8 border border-gray-200">
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-800">
-            📌 Keep-It
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-800 uppercase flex gap-4 items-center">
+            <UserIcon />{" "}
+            <div>
+              {user ? `${user.username.split("@")[0]}` : `Not Loggedin`}
+            </div>
           </h1>
           <div className="flex items-center gap-3">
             <Button
@@ -99,15 +111,25 @@ export const Dashboard = () => {
             />
           </div>
         </div>
-
+        {filteredContent.length === 0 && (
+          <div className="text-[32px] text-center font-semibold">
+            No Content found, Please add some!
+          </div>
+        )}
         {/* Cards grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 animate-fade-in ">
-          {filteredContent.map(({ title, link, type }, index) => (
+          {filteredContent.map(({ _id, title, link, type }) => (
             <div
-              key={index}
+              key={_id}
               className="transition-transform duration-300 transform hover:scale-[1.02] "
             >
-              <Card title={title} link={link} type={type} />
+              <Card
+                title={title}
+                link={link}
+                type={type}
+                id={_id}
+                refresh={refresh}
+              />
             </div>
           ))}
         </div>
