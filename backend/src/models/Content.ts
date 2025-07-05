@@ -4,10 +4,11 @@ const contentSchema = new mongoose.Schema({
   link: {
     type: String,
     trim: true,
+    required: true,
   },
   type: {
     type: String,
-    enum: ["youtube", "x", "article", "video"],
+    enum: ["youtube", "x", "instagram", "video"],
     required: true,
   },
   title: {
