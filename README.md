@@ -26,12 +26,3 @@
 | **Authentication** | JSON Web Tokens (JWT)              |
 | **API Style** | REST API                                  |
 
-
-
-
-### 1. Clone the Repository
-bash
-Copy
-Edit
-cd server
-npm install
