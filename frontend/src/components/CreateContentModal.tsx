@@ -66,31 +66,25 @@ export const CreateContentModal = ({
               <Input placeholder="Title" ref={titleRef} />
               <Input placeholder="Link" ref={linkRef} />
 
-              {/* Type selector */}
               <div className="flex items-center justify-center gap-4 pt-2">
-                <span className="font-medium text-gray-700">Type:</span>
-                <Button
-                  text="YouTube"
-                  size="md"
-                  variant={
-                    type === ContentType.YouTube ? "primary" : "secondary"
-                  }
-                  onClick={() => setType(ContentType.YouTube)}
-                />
-                <Button
-                  text="X"
-                  size="md"
-                  variant={type === ContentType.X ? "primary" : "secondary"}
-                  onClick={() => setType(ContentType.X)}
-                />
-                <Button
-                  text="Instagram"
-                  size="md"
-                  variant={
-                    type === ContentType.Instagram ? "primary" : "secondary"
-                  }
-                  onClick={() => setType(ContentType.Instagram)}
-                />
+                <label
+                  htmlFor="type-select"
+                  className="font-medium text-gray-700"
+                >
+                  Type:
+                </label>
+                <select
+                  id="type-select"
+                  value={type}
+                  onChange={(e) => {
+                    setType(e.target.value);
+                  }}
+                  className="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value={ContentType.YouTube}>YouTube</option>
+                  <option value={ContentType.X}>X</option>
+                  <option value={ContentType.Instagram}>Instagram</option>
+                </select>
               </div>
 
               {/* Submit button */}

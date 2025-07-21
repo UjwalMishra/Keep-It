@@ -1,4 +1,5 @@
 import AllIcon from "../icons/AllIcon";
+import InstaIcon from "../icons/InstaIcon";
 import MainIcon from "../icons/MainIcon";
 import XIcons from "../icons/XIcons";
 import YtIcon from "../icons/YtIcon";
@@ -117,7 +118,7 @@ export default function Sidebar({
             }`}
           />
           <div className="flex items-center ml-4">
-            <YtIcon />
+            <InstaIcon />
             <Button
               size="md"
               variant="normal"
