@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   deleteContentController,
   getContentController,
+  getFilteredContentController,
   postContentController,
 } from "../controllers/Content";
 import { authorizationMiddleware } from "../middlewares/Authorization";
@@ -19,6 +20,13 @@ router.delete(
   "/delete-content",
   authorizationMiddleware,
   deleteContentController
+);
+
+//filter content
+router.get(
+  "/get-content",
+  authorizationMiddleware,
+  getFilteredContentController
 );
 
 export default router;
