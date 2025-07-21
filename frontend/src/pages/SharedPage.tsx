@@ -39,8 +39,15 @@ export default function SharedPage() {
         </div>
       )}
       <div className="flex flex-wrap ml-72 gap-8 mt-8">
-        {filteredContent.map(({ title, link, type }) => (
-          <Card title={title} link={link} type={type} />
+        {filteredContent.map(({ title, link, type, desc, tags }) => (
+          <Card
+            title={title}
+            link={link}
+            type={type}
+            desc={desc}
+            tags={tags}
+            shared={true}
+          />
         ))}
       </div>
     </div>

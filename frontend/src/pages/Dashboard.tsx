@@ -150,7 +150,7 @@ export const Dashboard = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 animate-fade-in">
-            {displayContent.map(({ _id, title, link, type, tags }) => (
+            {displayContent.map(({ _id, title, link, type, tags, desc }) => (
               <div
                 key={_id}
                 className="transition-transform duration-300 transform hover:scale-[1.02]"
@@ -161,6 +161,7 @@ export const Dashboard = () => {
                   type={type}
                   id={_id}
                   tags={tags}
+                  desc={desc}
                   refresh={refresh}
                 />
               </div>

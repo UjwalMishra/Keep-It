@@ -1,6 +1,7 @@
 import AllIcon from "../icons/AllIcon";
 import InstaIcon from "../icons/InstaIcon";
 import MainIcon from "../icons/MainIcon";
+import NotesIcon from "../icons/NotesIcon";
 import XIcons from "../icons/XIcons";
 import YtIcon from "../icons/YtIcon";
 import { Button } from "./ui/Button";
@@ -123,6 +124,34 @@ export default function Sidebar({
               size="md"
               variant="normal"
               text="Instagram"
+              onClick={() => {}}
+            />
+          </div>
+        </div>
+
+        {/* notes  */}
+        <div
+          className={`group relative overflow-hidden rounded-lg transition-all duration-300 hover:shadow-md cursor-pointer ${
+            type === "notes"
+              ? "bg-gradient-to-r from-indigo-100 to-pink-100 shadow-inner"
+              : ""
+          }`}
+          onClick={() => setType("notes")}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div
+            className={`absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-pink-500 transform transition-transform duration-300 ${
+              type === "notes"
+                ? "translate-x-0"
+                : "-translate-x-full group-hover:translate-x-0"
+            }`}
+          />
+          <div className="flex items-center ml-4">
+            <NotesIcon />
+            <Button
+              size="md"
+              variant="normal"
+              text="Notes"
               onClick={() => {}}
             />
           </div>

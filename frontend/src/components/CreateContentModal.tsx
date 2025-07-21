@@ -14,6 +14,7 @@ export enum ContentType {
   YouTube = "youtube",
   X = "x",
   Instagram = "instagram",
+  Notes = "notes",
 }
 
 interface createContentProps {
@@ -30,6 +31,7 @@ export const CreateContentModal = ({
   const [type, setType] = useState(ContentType.YouTube);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const titleRef = useRef<any>("");
+  const descRef = useRef<any>("");
   const linkRef = useRef<any>("");
   const tagRef = useRef<any>([""]);
 
@@ -52,20 +54,28 @@ export const CreateContentModal = ({
       icon: <InstaIcon />,
       // color: "bg-pink-50 text-pink-700 border-pink-200",
     },
+    {
+      value: ContentType.Notes,
+      label: "Notes",
+      icon: <InstaIcon />,
+      // color: "bg-pink-50 text-pink-700 border-pink-200",
+    },
   ];
 
   const selectedType = contentTypes.find((ct) => ct.value === type);
 
   async function addContentFxn() {
     const title = titleRef.current.value;
+    const desc = descRef.current.value;
     const link = linkRef.current.value;
     const tags = tagRef.current.getTags();
-    console.log(tags);
+
+    console.log(title, " ", desc, " ", link, " ", tags);
 
     const token = localStorage.getItem("token");
     await axios.post(
       `${BACKEND_URL}/content/post-content`,
-      { title, link, type, tags },
+      { title, link, type, tags, desc },
       {
         headers: {
           Authorization: `Bearer ${token} `,
@@ -167,10 +177,24 @@ export const CreateContentModal = ({
                 <Input placeholder="Enter content title..." ref={titleRef} />
               </div>
 
+              {type === "notes" && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <Input placeholder="Enter content title..." ref={descRef} />
+                </div>
+              )}
+
               {/* Link Input */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Link
+                  Link{" "}
+                  {type === "notes" && (
+                    <span className="text-gray-400 font-normal">
+                      (optional)
+                    </span>
+                  )}
                 </label>
                 <Input
                   placeholder="Paste your content link here..."

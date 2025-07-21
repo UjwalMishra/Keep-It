@@ -6,17 +6,29 @@ import YtIcon from "../../icons/YtIcon";
 import axios from "axios";
 import { BACKEND_URL } from "../../config";
 import toast from "react-hot-toast";
+import NotesIcon from "../../icons/NotesIcon";
 
 interface CardProps {
   title: string;
   link: string;
-  type: "x" | "youtube" | "instagram";
+  type: "x" | "youtube" | "instagram" | "notes";
   id: string;
+  desc: string;
   tags: { title: string }[];
   refresh: () => void;
+  shared: boolean;
 }
 
-export const Card = ({ title, link, type, id, refresh, tags }: CardProps) => {
+export const Card = ({
+  title,
+  link,
+  type,
+  id,
+  refresh,
+  tags,
+  desc,
+  shared,
+}: CardProps) => {
   function getYouTubeEmbedLink(link: string): string {
     try {
       const url = new URL(link);
@@ -78,34 +90,41 @@ export const Card = ({ title, link, type, id, refresh, tags }: CardProps) => {
             </div>
 
             {/* Tags */}
-            <div className="flex flex-wrap gap-2 mt-1">
-              {tags.map((tag, i) => (
-                <span
-                  key={i}
-                  className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded-full"
-                >
-                  #{tag.title}
-                </span>
-              ))}
-            </div>
+            {tags && (
+              <div className="flex flex-wrap gap-2 mt-1">
+                {tags.map((tag, i) => (
+                  <span
+                    key={i}
+                    className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded-full"
+                  >
+                    #{tag.title}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Actions */}
+
           <div className="flex items-center space-x-2 opacity-70 group-hover:opacity-100 transition-opacity">
-            <a
-              href={link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowIcon />
-            </a>
-            <button
-              className="p-2 hover:bg-red-100 text-red-600 rounded-lg transition-colors cursor-pointer"
-              onClick={deletefxn}
-            >
-              <DeleteIcon />
-            </button>
+            {link && (
+              <a
+                href={link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ArrowIcon />
+              </a>
+            )}
+            {!shared && (
+              <button
+                className="p-2 hover:bg-red-100 text-red-600 rounded-lg transition-colors cursor-pointer"
+                onClick={deletefxn}
+              >
+                <DeleteIcon />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -138,6 +157,22 @@ export const Card = ({ title, link, type, id, refresh, tags }: CardProps) => {
             <div className="w-full h-full flex items-center justify-center">
               <div className="w-full h-full max-w-[320px] mx-auto scrollbar-thin scrollbar-thumb-gray-50 scrollbar-track-gray-50 hover:scrollbar-thumb-gray-100">
                 <InstagramEmbed url={link} />
+              </div>
+            </div>
+          )}
+
+          {type === "notes" && (
+            <div className="flex flex-col h-full">
+              <div className="flex items-center mb-2">
+                <span className="px-2">
+                  <NotesIcon />
+                </span>
+                <p className="text-md font-medium text-gray-700 mb-1">
+                  Description
+                </p>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg text-sm text-gray-800 whitespace-pre-wrap font-sans leading-relaxed h-full">
+                {desc || "No content provided."}
               </div>
             </div>
           )}
