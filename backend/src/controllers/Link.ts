@@ -71,10 +71,13 @@ export const openSharedLinkController = async (
 
     const userId = link.userId;
 
-    const content = await Content.find({ userId }).populate({
-      path: "userId",
-      select: "username",
-    });
+    const content = await Content.find({ userId })
+      .populate({ path: "tags" })
+      .populate({
+        path: "userId",
+        select: "username",
+      });
+    console.log(JSON.stringify(content));
 
     return res.status(200).json({
       success: true,

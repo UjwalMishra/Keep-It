@@ -42,6 +42,7 @@ export const postContentController = async (
 
     const content = await Content.create({
       link: contentData.link,
+      desc: contentData.desc,
       type: contentData.type,
       title: contentData.title,
       userId: req.userId,
