@@ -32,10 +32,10 @@ export const Button = (props: ButtonProps) => {
         sizeStyles[props.size]
       } ${props.fullWidth ? " w-full flex justify-center items-center" : ""}`}
     >
-      <div>
-        {props.startIcon ? <div className="pr-2">{props.startIcon}</div> : null}
-      </div>
       <div className="font-semibold"> {props.text}</div>
+      <div>
+        {props.startIcon ? <div className="pl-2">{props.startIcon}</div> : null}
+      </div>
     </button>
   );
 };
