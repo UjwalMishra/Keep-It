@@ -11,6 +11,7 @@ import InstaIcon from "../icons/InstaIcon";
 import NotesIcon from "../icons/NotesIcon";
 import WebIcon from "../icons/WebIcon";
 import Loader from "./Loader";
+import toast from "react-hot-toast";
 
 //@ts-ignore
 export enum ContentType {
@@ -90,8 +91,10 @@ export const CreateContentModal = ({
           },
         }
       );
+      toast.success("Content Added");
     } catch (err) {
       console.log(err);
+      toast.error("Something went wrong!");
       refresh();
     }
     setIsloading(false);

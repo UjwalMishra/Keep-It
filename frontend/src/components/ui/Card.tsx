@@ -71,7 +71,10 @@ export const Card = ({
     });
 
     refresh();
-    toast("Deleted!");
+    toast.success("Content deleted.", {
+      icon: "🗑️",
+      duration: 3000,
+    });
   }
 
   return (

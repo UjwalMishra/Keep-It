@@ -59,7 +59,8 @@ export const Dashboard = () => {
       }
     );
     copy(`http://localhost:5173/share/${shareLink.data.link}`);
-    toast("Copied!!!");
+    copy(`http://localhost:5173/share/${shareLink.data.link}`);
+    toast.success("Link Copied!");
   }
 
   //search logic
@@ -73,13 +74,14 @@ export const Dashboard = () => {
     searchResults.length > 0 ? searchResults : filteredContent;
   // console.log("display - ", displayContent);
 
+  //@ts-ignore
   if (searchResults.length == 0 && searchRef.current.value != "") {
     displayContent = [];
   }
   console.log(searchResults);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900 relative font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 text-gray-900 relative font-sans">
       {/* Sidebar */}
       <Sidebar
         setType={setType}
@@ -177,6 +179,7 @@ export const Dashboard = () => {
                 size="md"
                 onClick={() => {
                   localStorage.clear();
+                  toast.success("Log out");
                   navigate("/signin");
                 }}
                 startIcon={<LogoutIcon />}
