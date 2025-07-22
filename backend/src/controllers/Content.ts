@@ -4,8 +4,6 @@ import { Content } from "../models/Content";
 import { Tag } from "../models/Tag";
 // import urlMetadata from "url-metadata";
 
-import got from "got";
-
 import metascraper from "metascraper";
 import metascraperImage from "metascraper-image";
 import metascraperTitle from "metascraper-title";
@@ -53,11 +51,12 @@ export const postContentController = async (
 
     if (contentData.type === "web articles" && contentData.link) {
       try {
+        const got = (await import("got")).default;
         const { body: html, url } = await got(contentData.link);
         const meta = await scraper({ html, url });
 
-        finalTitle = meta.title || contentData.title;
-        previewImage = meta.image || "";
+        finalTitle = meta?.title || contentData.title;
+        previewImage = meta?.image || "";
       } catch (err) {
         console.warn("⚠️ Metascraper failed:", err);
       }
