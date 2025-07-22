@@ -1,3 +1,6 @@
-export const BACKEND_URL = "https://keep-it-ujwal-mishras-projects.vercel.app/";
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-export const FRONTEND_URL = "http://localhost:5173/";
+export const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
+
+console.log("BE - ", BACKEND_URL);
+console.log("FE", FRONTEND_URL);

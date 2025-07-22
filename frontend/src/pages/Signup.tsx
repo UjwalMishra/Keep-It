@@ -24,8 +24,6 @@ export default function Signup() {
         password,
       });
 
-      console.log(res.data.message);
-
       toast("Account Created! Please Login now");
       navigate("/signin");
     } catch (err: any) {

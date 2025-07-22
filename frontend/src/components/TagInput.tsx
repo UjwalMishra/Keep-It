@@ -1,14 +1,24 @@
-import React, { useState, forwardRef, useImperativeHandle } from "react";
+import { useState, forwardRef, useImperativeHandle } from "react";
+import type { ForwardRefRenderFunction } from "react";
 
-const TagInput = forwardRef((props, ref) => {
-  const [tags, setTags] = useState([]);
+export interface TagInputRef {
+  getTags: () => string[];
+}
+
+interface TagInputProps {}
+
+const TagInput: ForwardRefRenderFunction<TagInputRef, TagInputProps> = (
+  _props,
+  ref
+) => {
+  const [tags, setTags] = useState<string[]>([]);
   const [input, setInput] = useState("");
 
   useImperativeHandle(ref, () => ({
     getTags: () => tags,
   }));
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if ((e.key === "Enter" || e.key === ",") && input.trim() !== "") {
       e.preventDefault();
       const newTag = input.trim().toLowerCase();
@@ -17,13 +27,14 @@ const TagInput = forwardRef((props, ref) => {
       }
       setInput("");
     }
+
     if (e.key === "Backspace" && input === "") {
       setTags(tags.slice(0, -1));
     }
   };
 
-  const removeTag = (i) => {
-    setTags(tags.filter((_, index) => index !== i));
+  const removeTag = (index: number) => {
+    setTags(tags.filter((_, i) => i !== index));
   };
 
   return (
@@ -40,10 +51,10 @@ const TagInput = forwardRef((props, ref) => {
         placeholder="eg. #tech, #webdev"
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="px-4 py-2 border rounded-md my-1  w-full"
+        className="px-4 py-2 border rounded-md my-1 w-full"
       />
     </div>
   );
-});
+};
 
-export default TagInput;
+export default forwardRef(TagInput);

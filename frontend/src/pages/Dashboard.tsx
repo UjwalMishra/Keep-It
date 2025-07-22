@@ -3,7 +3,7 @@ import { AddIcon } from "../icons/AddIcon";
 import { ShareIcon } from "../icons/ShareIcon";
 import { Card } from "../components/ui/Card";
 import { CreateContentModal } from "../components/CreateContentModal";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { useContent } from "../hooks/useContent";
 import { useNavigate } from "react-router-dom";
@@ -227,13 +227,13 @@ export const Dashboard = () => {
 
         {/* Content Cards */}
         <div className="p-4 xl:p-6 mt-4 xl:mt-8">
-          {displayContent.length === 0 ? (
+          {displayContent?.length === 0 ? (
             <div className="text-2xl sm:text-3xl xl:text-4xl text-center font-semibold text-gray-600 mt-12">
               No Content found!
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3  gap-4 sm:gap-6 animate-fade-in">
-              {displayContent.map(
+              {displayContent?.map(
                 ({ _id, title, link, type, tags, desc, previewImage }) => (
                   <div
                     key={_id}
