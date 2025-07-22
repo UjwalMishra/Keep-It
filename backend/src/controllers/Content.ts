@@ -154,6 +154,7 @@ export const getFilteredContentController = async (
 ): Promise<any> => {
   try {
     const { query } = req.query;
+    const userId = req.userId;
 
     if (!query) {
       return res
@@ -163,13 +164,16 @@ export const getFilteredContentController = async (
 
     const searchText = String(query).toLowerCase();
 
-    // 1. Get contents where title matches the search text
+    // 1. Get contents where title matches AND userId matches
     const titleMatched = await Content.find({
+      userId: req.userId,
       title: { $regex: searchText, $options: "i" },
     }).populate("tags");
 
-    // 2. Get all contents and filter those where any tag title matches
-    const allContents = await Content.find().populate("tags");
+    // 2. Get all contents for that user and filter those where tag titles match
+    const allContents = await Content.find({ userId: req.userId }).populate(
+      "tags"
+    );
 
     const tagMatched = allContents.filter((content) =>
       //@ts-ignore
