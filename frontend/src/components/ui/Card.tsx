@@ -1,4 +1,5 @@
-import { InstagramEmbed, XEmbed } from "react-social-media-embed";
+import React, { useEffect } from "react"; // <-- Import React and useEffect
+import { Tweet } from "react-tweet"; // <-- This is correct for Twitter
 import DeleteIcon from "../../icons/DeleteIcon";
 import ArrowIcon from "../../icons/ArrowIcon";
 import XIcons from "../../icons/XIcons";
@@ -9,6 +10,19 @@ import toast from "react-hot-toast";
 import NotesIcon from "../../icons/NotesIcon";
 import WebIcon from "../../icons/WebIcon";
 import InstaIcon from "../../icons/InstaIcon";
+
+// Helper function to get the ID from a Tweet URL
+const getTweetId = (url: string): string => {
+  try {
+    const urlObject = new URL(url);
+    // The ID is the last part of the path, e.g., /status/123456789
+    const pathParts = urlObject.pathname.split("/");
+    return pathParts[pathParts.length - 1];
+  } catch (e) {
+    console.error("Invalid Tweet URL:", url);
+    return ""; // Return empty string if the URL is invalid
+  }
+};
 
 interface CardProps {
   title: string;
@@ -33,58 +47,54 @@ export const Card = ({
   shared,
   previewImage,
 }: CardProps) => {
+  // This useEffect tells Instagram's script (from index.html) to render the post.
+  useEffect(() => {
+    if (type === "instagram") {
+      // (window as any) tells TypeScript to ignore that it doesn't know about `instgrm`
+      if ((window as any).instgrm) {
+        (window as any).instgrm.Embeds.process();
+      }
+    }
+  }, [link, type]); // It re-runs if the link or card type changes.
+
+  // --- Helper functions ---
   function getYouTubeEmbedLink(link: string): string {
     try {
       const url = new URL(link);
-
       if (url.hostname === "youtu.be") {
-        const videoId = url.pathname.slice(1);
-        return `https://www.youtube.com/embed/${videoId}`;
+        return `https://www.youtube.com/embed/${url.pathname.slice(1)}`;
       }
-
       if (url.hostname.includes("youtube.com")) {
         const videoId = url.searchParams.get("v");
         return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
       }
-
       return "";
     } catch {
       return "";
     }
   }
 
-  let ytLink = "";
-  if (type === "youtube") {
-    ytLink = getYouTubeEmbedLink(link);
-  }
+  const ytLink = type === "youtube" ? getYouTubeEmbedLink(link) : "";
+  const tweetId = type === "x" ? getTweetId(link) : "";
 
   async function deletefxn() {
     const token = localStorage.getItem("token");
-
     await axios.delete(`${BACKEND_URL}/content/delete-content`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      data: {
-        contentId: id,
-      },
+      headers: { Authorization: `Bearer ${token}` },
+      data: { contentId: id },
     });
-
     refresh();
-    toast.success("Content deleted.", {
-      icon: "🗑️",
-      duration: 3000,
-    });
+    toast.success("Content deleted.", { icon: "🗑️", duration: 3000 });
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 w-full max-w-sm mx-auto border border-gray-200 overflow-hidden group">
+    <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 w-full border border-gray-200 overflow-hidden group flex flex-col">
       {/* Header */}
       <div className="w-full px-4 sm:px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
         <div className="flex justify-between items-start gap-3">
           <div className="flex flex-col space-y-2 flex-1 min-w-0">
             <div className="flex items-start space-x-3">
-              <div className=" text-xl  flex-shrink-0 mt-1">
+              <div className=" text-xl flex-shrink-0 mt-1">
                 {type === "x" && <XIcons />}
                 {type === "youtube" && <YtIcon />}
                 {type === "web articles" && <WebIcon />}
@@ -139,19 +149,19 @@ export const Card = ({
       </div>
 
       {/* Content */}
-      <div className="p-4 sm:p-6">
+      <div className="p-4 sm:p-6 flex-grow">
         <div className="w-full h-[200px] sm:h-[250px] rounded-lg overflow-hidden">
-          {/* x  */}
-          {type === "x" && (
+          {/* x (Twitter) - CORRECTED */}
+          {type === "x" && tweetId && (
             <div className="w-full h-full flex items-center justify-center">
               <div className="w-full h-full max-w-[320px] mx-auto scrollbar-thin scrollbar-thumb-gray-50 scrollbar-track-gray-50 hover:scrollbar-thumb-gray-100 overflow-auto">
-                <XEmbed url={link} />
+                <Tweet id={tweetId} />
               </div>
             </div>
           )}
 
-          {/* yt  */}
-          {type === "youtube" && (
+          {/* yt (YouTube) */}
+          {type === "youtube" && ytLink && (
             <iframe
               width="100%"
               height="100%"
@@ -164,21 +174,26 @@ export const Card = ({
             />
           )}
 
-          {/* insta  */}
+          {/* insta - CORRECTED */}
           {type === "instagram" && (
             <div className="w-full h-full flex items-center justify-center">
               <div className="w-full h-full max-w-[320px] mx-auto scrollbar-thin scrollbar-thumb-gray-50 scrollbar-track-gray-50 hover:scrollbar-thumb-gray-100 overflow-auto">
-                <InstagramEmbed url={link} />
+                <blockquote
+                  className="instagram-media"
+                  data-instgrm-permalink={link}
+                  data-instgrm-version="14"
+                ></blockquote>
               </div>
             </div>
           )}
 
-          {/* notes  */}
+          {/* notes */}
           {type === "notes" && (
             <div className="flex flex-col h-full">
               <div className="flex items-center mb-3">
                 <span className="px-2">
-                  <NotesIcon />
+                  {" "}
+                  <NotesIcon />{" "}
                 </span>
                 <p className="text-sm sm:text-md font-medium text-gray-700">
                   Description
@@ -190,11 +205,16 @@ export const Card = ({
             </div>
           )}
 
-          {/* web articles  */}
+          {/* web articles */}
           {type === "web articles" && (
             <div className="w-full h-full">
               {link && (
-                <a className=" cursor-pointer" href={link} target="_blank">
+                <a
+                  className=" cursor-pointer"
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <img
                     src={previewImage}
                     alt={title}

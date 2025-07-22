@@ -14,8 +14,6 @@ export default function SharedPage() {
 
   const { sharelink } = useParams();
 
-  console.log(sharelink);
-
   async function getSharedItems() {
     try {
       setLoading(true);

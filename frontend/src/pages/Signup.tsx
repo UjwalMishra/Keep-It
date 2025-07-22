@@ -19,7 +19,7 @@ export default function Signup() {
     const password = passwordRef.current?.value;
 
     try {
-      const res = await axios.post(`${BACKEND_URL}/auth/signup`, {
+      await axios.post(`${BACKEND_URL}/auth/signup`, {
         username,
         password,
       });
