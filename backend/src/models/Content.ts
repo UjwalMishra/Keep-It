@@ -7,17 +7,17 @@ const contentSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["youtube", "x", "instagram", "notes"],
+    enum: ["youtube", "x", "instagram", "notes", "web articles"],
     required: true,
   },
   desc: {
     type: String,
-    required: true,
+
     trim: true,
   },
   title: {
     type: String,
-    required: true,
+
     trim: true,
   },
   tags: [
@@ -26,6 +26,9 @@ const contentSchema = new mongoose.Schema({
       ref: "Tag",
     },
   ],
+  previewImage: {
+    type: String,
+  },
   userId: {
     type: mongoose.Types.ObjectId,
     ref: "User",

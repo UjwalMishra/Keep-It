@@ -2,6 +2,14 @@ import { Request, Response } from "express";
 import { contentZodSchema } from "../zod-schema/Content";
 import { Content } from "../models/Content";
 import { Tag } from "../models/Tag";
+// import urlMetadata from "url-metadata";
+
+import got from "got";
+import metascraper from "metascraper";
+import metascraperImage from "metascraper-image";
+import metascraperTitle from "metascraper-title";
+
+const scraper = metascraper([metascraperImage(), metascraperTitle()]);
 
 interface ContentRequest extends Request {
   userId?: string;
@@ -14,8 +22,8 @@ export const postContentController = async (
   try {
     const contentData = req.body;
 
-    const { success } = contentZodSchema.safeParse(contentData);
-    if (!success) {
+    const validation = contentZodSchema.safeParse(contentData);
+    if (!validation.success) {
       return res.status(411).json({
         msg: "You have sent the wrong input",
         success: false,
@@ -25,29 +33,48 @@ export const postContentController = async (
     const tagTitles = contentData.tags || [];
     const tagIds = [];
 
-    // Normalize tag titles
     const normalizedTags = [
       ...new Set(tagTitles.map((tag: string) => tag.toLowerCase().trim())),
     ];
 
     for (const title of normalizedTags) {
       let tag = await Tag.findOne({ title });
-
       if (!tag) {
         tag = await Tag.create({ title });
       }
-
       tagIds.push(tag._id);
+    }
+
+    // Web metadata logic
+    let finalTitle = contentData.title;
+    let finalDesc = contentData.desc;
+    let previewImage = "";
+
+    console.log(contentData.type);
+
+    if (contentData.type === "web articles" && contentData.link) {
+      try {
+        const { body: html, url } = await got(contentData.link);
+        const meta = await scraper({ html, url });
+
+        finalTitle = meta.title || contentData.title;
+        previewImage = meta.image || "";
+      } catch (err) {
+        console.warn("⚠️ Metascraper failed:", err);
+      }
     }
 
     const content = await Content.create({
       link: contentData.link,
-      desc: contentData.desc,
+      desc: finalDesc,
       type: contentData.type,
-      title: contentData.title,
+      title: finalTitle,
+      previewImage: previewImage,
       userId: req.userId,
       tags: tagIds,
     });
+
+    console.log(content);
 
     return res.status(200).json({
       success: true,
@@ -62,6 +89,7 @@ export const postContentController = async (
   }
 };
 
+//get content controller
 export const getContentController = async (
   req: ContentRequest,
   res: Response
@@ -73,7 +101,7 @@ export const getContentController = async (
         msg: "No content found, Pls add some",
       });
     }
-    console.log(JSON.stringify(content));
+    // console.log(JSON.stringify(content));
 
     return res.status(200).json({
       success: true,
