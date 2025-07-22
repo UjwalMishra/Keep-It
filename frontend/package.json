@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --watch src --ext ts,tsx --exec \"tsc && node dist/index.js\"",
+    "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -20,11 +20,13 @@
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.6.3",
     "react-social-media-embed": "^2.5.18",
+    "react-spinners": "^0.17.0",
     "react-tag-input": "^6.10.6",
     "react-toastify": "^11.0.5",
     "react-tweet": "^3.2.2",
     "tailwind-scrollbar": "^4.0.2",
-    "tailwindcss": "^4.1.11"
+    "tailwindcss": "^4.1.11",
+    "url-metadata": "^5.2.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",

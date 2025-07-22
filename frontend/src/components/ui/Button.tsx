@@ -8,6 +8,7 @@ export interface ButtonProps {
   endIcon?: ReactElement;
   onClick?: () => void;
   fullWidth?: boolean;
+  type?: "button" | "submit" | "reset"; // Added type
 }
 
 const variantStyles = {
@@ -16,7 +17,8 @@ const variantStyles = {
   normal: "text-black",
 };
 
-const defaultStyle = "rounded-md flex items-center cursor-pointer";
+const defaultStyle =
+  "rounded-md flex items-center justify-center cursor-pointer";
 
 const sizeStyles = {
   sm: "text-[12px] px-4 py-1",
@@ -27,15 +29,16 @@ const sizeStyles = {
 export const Button = (props: ButtonProps) => {
   return (
     <button
+      type={props.type || "button"}
       onClick={props.onClick}
       className={`${variantStyles[props.variant]} ${defaultStyle} ${
         sizeStyles[props.size]
-      } ${props.fullWidth ? " w-full flex justify-center items-center" : ""}`}
+      } ${props.fullWidth ? " w-full" : ""}`}
     >
-      <div className="font-semibold"> {props.text}</div>
-      <div>
-        {props.startIcon ? <div className="pl-2">{props.startIcon}</div> : null}
-      </div>
+      <span className="font-semibold">{props.text}</span>
+      {props.startIcon && <span className="ml-2">{props.startIcon}</span>}
+
+      {props.endIcon && <span className="ml-2">{props.endIcon}</span>}
     </button>
   );
 };

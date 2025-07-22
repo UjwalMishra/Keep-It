@@ -7,15 +7,18 @@ import axios from "axios";
 import { BACKEND_URL } from "../../config";
 import toast from "react-hot-toast";
 import NotesIcon from "../../icons/NotesIcon";
+import WebIcon from "../../icons/WebIcon";
+import InstaIcon from "../../icons/InstaIcon";
 
 interface CardProps {
   title: string;
   link: string;
-  type: "x" | "youtube" | "instagram" | "notes";
+  type: "x" | "youtube" | "instagram" | "notes" | "web articles";
   id: string;
   desc: string;
   tags: { title: string }[];
   refresh: () => void;
+  previewImage: string;
   shared: boolean;
 }
 
@@ -28,6 +31,7 @@ export const Card = ({
   tags,
   desc,
   shared,
+  previewImage,
 }: CardProps) => {
   function getYouTubeEmbedLink(link: string): string {
     try {
@@ -71,31 +75,34 @@ export const Card = ({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 w-[380px] border border-gray-200 overflow-hidden group">
+    <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 w-full max-w-sm mx-auto border border-gray-200 overflow-hidden group">
       {/* Header */}
-      <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-        <div className="flex justify-between items-start">
-          <div className="flex flex-col space-y-2">
-            <div className="flex items-center space-x-3">
-              <div className="rounded-lg text-xl shadow-sm">
+      <div className="w-full px-4 sm:px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+        <div className="flex justify-between items-start gap-3">
+          <div className="flex flex-col space-y-2 flex-1 min-w-0">
+            <div className="flex items-start space-x-3">
+              <div className=" text-xl  flex-shrink-0 mt-1">
                 {type === "x" && <XIcons />}
                 {type === "youtube" && <YtIcon />}
+                {type === "web articles" && <WebIcon />}
+                {type === "notes" && <NotesIcon />}
+                {type === "instagram" && <InstaIcon />}
               </div>
-              <div>
-                <h3 className="text-gray-800 font-semibold text-lg leading-tight truncate">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-gray-800 font-semibold text-base sm:text-lg leading-tight break-words">
                   {title}
                 </h3>
-                <p className="text-gray-500 text-sm capitalize">{type}</p>
+                <p className="text-gray-500 text-sm capitalize mt-1">{type}</p>
               </div>
             </div>
 
             {/* Tags */}
-            {tags && (
-              <div className="flex flex-wrap gap-2 mt-1">
+            {tags && tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
                 {tags.map((tag, i) => (
                   <span
                     key={i}
-                    className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded-full"
+                    className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded-full break-all"
                   >
                     #{tag.title}
                   </span>
@@ -105,8 +112,7 @@ export const Card = ({
           </div>
 
           {/* Actions */}
-
-          <div className="flex items-center space-x-2 opacity-70 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center space-x-1 opacity-70 group-hover:opacity-100 transition-opacity flex-shrink-0">
             {link && (
               <a
                 href={link}
@@ -130,16 +136,18 @@ export const Card = ({
       </div>
 
       {/* Content */}
-      <div className="p-6">
-        <div className="w-full h-[250px] rounded-lg overflow-auto">
+      <div className="p-4 sm:p-6">
+        <div className="w-full h-[200px] sm:h-[250px] rounded-lg overflow-hidden">
+          {/* x  */}
           {type === "x" && (
             <div className="w-full h-full flex items-center justify-center">
-              <div className="w-full h-full max-w-[320px] mx-auto scrollbar-thin scrollbar-thumb-gray-50 scrollbar-track-gray-50 hover:scrollbar-thumb-gray-100">
+              <div className="w-full h-full max-w-[320px] mx-auto scrollbar-thin scrollbar-thumb-gray-50 scrollbar-track-gray-50 hover:scrollbar-thumb-gray-100 overflow-auto">
                 <XEmbed url={link} />
               </div>
             </div>
           )}
 
+          {/* yt  */}
           {type === "youtube" && (
             <iframe
               width="100%"
@@ -153,27 +161,47 @@ export const Card = ({
             />
           )}
 
+          {/* insta  */}
           {type === "instagram" && (
             <div className="w-full h-full flex items-center justify-center">
-              <div className="w-full h-full max-w-[320px] mx-auto scrollbar-thin scrollbar-thumb-gray-50 scrollbar-track-gray-50 hover:scrollbar-thumb-gray-100">
+              <div className="w-full h-full max-w-[320px] mx-auto scrollbar-thin scrollbar-thumb-gray-50 scrollbar-track-gray-50 hover:scrollbar-thumb-gray-100 overflow-auto">
                 <InstagramEmbed url={link} />
               </div>
             </div>
           )}
 
+          {/* notes  */}
           {type === "notes" && (
             <div className="flex flex-col h-full">
-              <div className="flex items-center mb-2">
+              <div className="flex items-center mb-3">
                 <span className="px-2">
                   <NotesIcon />
                 </span>
-                <p className="text-md font-medium text-gray-700 mb-1">
+                <p className="text-sm sm:text-md font-medium text-gray-700">
                   Description
                 </p>
               </div>
-              <div className="bg-yellow-50 p-4 rounded-lg text-sm text-gray-800 whitespace-pre-wrap font-sans leading-relaxed h-full">
+              <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg text-sm text-gray-800 whitespace-pre-wrap font-sans leading-relaxed flex-1 overflow-auto">
                 {desc || "No content provided."}
               </div>
+            </div>
+          )}
+
+          {/* web articles  */}
+          {type === "web articles" && (
+            <div className="w-full h-full">
+              {link && (
+                <a className=" cursor-pointer" href={link} target="_blank">
+                  <img
+                    src={previewImage}
+                    alt={title}
+                    className="w-full h-full object-cover rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.src = "/api/placeholder/400/250";
+                    }}
+                  />
+                </a>
+              )}
             </div>
           )}
         </div>

@@ -8,6 +8,9 @@ import TagInput from "./TagInput";
 import YtIcon from "../icons/YtIcon";
 import XIcons from "../icons/XIcons";
 import InstaIcon from "../icons/InstaIcon";
+import NotesIcon from "../icons/NotesIcon";
+import WebIcon from "../icons/WebIcon";
+import Loader from "./Loader";
 
 //@ts-ignore
 export enum ContentType {
@@ -15,6 +18,7 @@ export enum ContentType {
   X = "x",
   Instagram = "instagram",
   Notes = "notes",
+  WebArticles = "web articles",
 }
 
 interface createContentProps {
@@ -28,6 +32,7 @@ export const CreateContentModal = ({
   onClose,
   refresh,
 }: createContentProps) => {
+  const [isLoading, setIsloading] = useState(false);
   const [type, setType] = useState(ContentType.YouTube);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const titleRef = useRef<any>("");
@@ -40,48 +45,57 @@ export const CreateContentModal = ({
       value: ContentType.YouTube,
       label: "YouTube",
       icon: <YtIcon />,
-      // color: "bg-red-50 text-red-700 border-red-200",
     },
     {
       value: ContentType.X,
       label: "X (Twitter)",
       icon: <XIcons />,
-      // color: "bg-gray-50 text-gray-700 border-gray-200",
     },
     {
       value: ContentType.Instagram,
       label: "Instagram",
       icon: <InstaIcon />,
-      // color: "bg-pink-50 text-pink-700 border-pink-200",
     },
     {
       value: ContentType.Notes,
       label: "Notes",
-      icon: <InstaIcon />,
-      // color: "bg-pink-50 text-pink-700 border-pink-200",
+      icon: <NotesIcon />,
+    },
+    {
+      value: ContentType.WebArticles,
+      label: "Web Articles",
+      icon: <WebIcon />,
     },
   ];
 
   const selectedType = contentTypes.find((ct) => ct.value === type);
 
   async function addContentFxn() {
-    const title = titleRef.current.value;
-    const desc = descRef.current.value;
-    const link = linkRef.current.value;
-    const tags = tagRef.current.getTags();
+    const title = titleRef.current?.value;
+    const desc = descRef.current?.value;
+    const link = linkRef.current?.value;
+    const tags = tagRef.current?.getTags();
 
     console.log(title, " ", desc, " ", link, " ", tags);
 
+    setIsloading(true);
     const token = localStorage.getItem("token");
-    await axios.post(
-      `${BACKEND_URL}/content/post-content`,
-      { title, link, type, tags, desc },
-      {
-        headers: {
-          Authorization: `Bearer ${token} `,
-        },
-      }
-    );
+    try {
+      await axios.post(
+        `${BACKEND_URL}/content/post-content`,
+        { title, link, type, tags, desc },
+        {
+          headers: {
+            Authorization: `Bearer ${token} `,
+          },
+        }
+      );
+    } catch (err) {
+      console.log(err);
+      refresh();
+    }
+    setIsloading(false);
+
     refresh();
     onClose();
   }
@@ -117,10 +131,10 @@ export const CreateContentModal = ({
                   <button
                     type="button"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className={`w-full px-4 py-3 text-left border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 ${selectedType?.color} hover:shadow-md`}
+                    className={`w-full px-4 py-3 text-left border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 cursor-pointer hover:shadow-md`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 ">
                         <span className="text-lg">{selectedType?.icon}</span>
                         <span className="font-medium">
                           {selectedType?.label}
@@ -143,7 +157,7 @@ export const CreateContentModal = ({
                   </button>
 
                   {isDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden ">
                       {contentTypes.map((contentType) => (
                         <button
                           key={contentType.value}
@@ -152,7 +166,7 @@ export const CreateContentModal = ({
                             setType(contentType.value as ContentType);
                             setIsDropdownOpen(false);
                           }}
-                          className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-150 flex items-center gap-3 ${
+                          className={`w-full cursor-pointer px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-150 flex items-center gap-3 ${
                             type === contentType.value
                               ? "bg-blue-50 border-l-4 border-l-blue-500"
                               : ""
@@ -169,56 +183,87 @@ export const CreateContentModal = ({
                 </div>
               </div>
 
-              {/* Title Input */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Title
-                </label>
-                <Input placeholder="Enter content title..." ref={titleRef} />
-              </div>
-
-              {type === "notes" && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault(); // prevent reload
+                  addContentFxn(); // your manual logic
+                }}
+              >
+                {/* Title Input */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Description
+                    Title{" "}
+                    {type === "web articles" && (
+                      <span className="text-gray-400 font-normal">
+                        (optional)
+                      </span>
+                    )}
                   </label>
-                  <Input placeholder="Enter content title..." ref={descRef} />
+                  <Input
+                    placeholder="Enter content title..."
+                    required={type == "web articles" ? false : true}
+                    ref={titleRef}
+                  />
                 </div>
-              )}
 
-              {/* Link Input */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Link{" "}
-                  {type === "notes" && (
-                    <span className="text-gray-400 font-normal">
-                      (optional)
-                    </span>
+                {/* description  */}
+                {(type === "notes" || type === "web articles") && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Description
+                    </label>
+                    <Input
+                      required={
+                        type == "web articles" || type == "notes" ? true : false
+                      }
+                      placeholder="Enter content Description..."
+                      ref={descRef}
+                    />
+                  </div>
+                )}
+
+                {/* Link Input */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Link{" "}
+                    {type === "notes" && (
+                      <span className="text-gray-400 font-normal">
+                        (optional)
+                      </span>
+                    )}
+                  </label>
+                  <Input
+                    required={type == "notes" ? false : true}
+                    placeholder="Paste your content link here..."
+                    ref={linkRef}
+                  />
+                </div>
+
+                {/* Tags Input */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Tags
+                  </label>
+                  <TagInput ref={tagRef} />
+                </div>
+
+                {/* Submit Button */}
+                <div className="pt-6 flex justify-center">
+                  {isLoading == true ? (
+                    <div>
+                      <Loader color={"black"} />
+                    </div>
+                  ) : (
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      text="Add Content"
+                      size="lg"
+                      // onClick={addContentFxn}
+                    />
                   )}
-                </label>
-                <Input
-                  placeholder="Paste your content link here..."
-                  ref={linkRef}
-                />
-              </div>
-
-              {/* Tags Input */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Tags
-                </label>
-                <TagInput ref={tagRef} />
-              </div>
-
-              {/* Submit Button */}
-              <div className="pt-6 flex justify-center">
-                <Button
-                  variant="primary"
-                  text="Add Content"
-                  size="lg"
-                  onClick={addContentFxn}
-                />
-              </div>
+                </div>
+              </form>
             </div>
           </div>
         </div>
