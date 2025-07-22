@@ -5,6 +5,7 @@ import { Tag } from "../models/Tag";
 // import urlMetadata from "url-metadata";
 
 import got from "got";
+
 import metascraper from "metascraper";
 import metascraperImage from "metascraper-image";
 import metascraperTitle from "metascraper-title";
@@ -49,8 +50,6 @@ export const postContentController = async (
     let finalTitle = contentData.title;
     let finalDesc = contentData.desc;
     let previewImage = "";
-
-    console.log(contentData.type);
 
     if (contentData.type === "web articles" && contentData.link) {
       try {
