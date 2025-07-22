@@ -52,7 +52,7 @@ export default function Sidebar({
               <div className="text-2xl sm:text-3xl font-bold">
                 <MainIcon />
               </div>
-              <div>Keep-It</div>
+              <div className="select-none">Keep-It</div>
             </h2>
             {/* Close button for mobile */}
             <button

@@ -8,7 +8,7 @@ import Sidebar from "../components/Sidebar";
 import { useContent } from "../hooks/useContent";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { BACKEND_URL } from "../config";
+import { BACKEND_URL, FRONTEND_URL } from "../config";
 import copy from "copy-to-clipboard";
 import { toast } from "react-hot-toast";
 import { getDecodedToken } from "../utils/decode";
@@ -22,7 +22,7 @@ export const Dashboard = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const searchRef = useRef("");
+  const [searchParam, setSearchParam] = useState("");
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -58,8 +58,9 @@ export const Dashboard = () => {
         },
       }
     );
-    copy(`http://localhost:5173/share/${shareLink.data.link}`);
-    copy(`http://localhost:5173/share/${shareLink.data.link}`);
+    copy(`${FRONTEND_URL}share/${shareLink.data.link}`);
+    copy(`${FRONTEND_URL}share/${shareLink.data.link}`);
+
     toast.success("Link Copied!");
   }
 
@@ -72,13 +73,11 @@ export const Dashboard = () => {
 
   let displayContent =
     searchResults.length > 0 ? searchResults : filteredContent;
-  // console.log("display - ", displayContent);
 
   //@ts-ignore
-  if (searchResults.length == 0 && searchRef.current.value != "") {
+  if (searchResults.length === 0 && searchParam !== "") {
     displayContent = [];
   }
-  console.log(searchResults);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 text-gray-900 relative font-sans">
@@ -153,7 +152,7 @@ export const Dashboard = () => {
                 <SearchContent
                   refresh={refresh}
                   setSearchResults={setSearchResults}
-                  val={searchRef}
+                  setSearchParam={setSearchParam}
                 />
                 <div className="absolute right-0 pr-2">
                   <SearchIcon />
@@ -196,7 +195,7 @@ export const Dashboard = () => {
               <SearchContent
                 refresh={refresh}
                 setSearchResults={setSearchResults}
-                val={searchRef}
+                setSearchParam={setSearchParam}
               />
               <div className="absolute right-0 pr-2">
                 <SearchIcon />

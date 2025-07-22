@@ -1,9 +1,18 @@
 import axios from "axios";
+import { BACKEND_URL } from "../config";
 
-const SearchContent = ({ setSearchResults, val, refresh }) => {
-  async function filterHandler(e) {
+const SearchContent = ({
+  setSearchResults,
+  setSearchParam,
+  refresh,
+}: {
+  setSearchResults: any;
+  setSearchParam: any;
+  refresh: () => void;
+}) => {
+  async function filterHandler(e: React.ChangeEvent<HTMLInputElement>) {
     const filter = e.target.value;
-    console.log(filter);
+    setSearchParam(filter);
 
     if (!filter) {
       setSearchResults([]);
@@ -15,7 +24,7 @@ const SearchContent = ({ setSearchResults, val, refresh }) => {
       const token = localStorage.getItem("token");
 
       const contentData = await axios.get(
-        `http://localhost:3000/api/v1/content/get-content?query=${filter}`,
+        `${BACKEND_URL}/content/get-content?query=${filter}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -33,7 +42,6 @@ const SearchContent = ({ setSearchResults, val, refresh }) => {
   return (
     <div>
       <input
-        ref={val}
         className=" w-[250px] px-3 py-1 border rounded-xl"
         placeholder="Search..."
         onChange={filterHandler}
