@@ -32,8 +32,6 @@ export const signupController = async (
       });
     }
 
-    console.log(userData.username.toLoweCase());
-
     const user = await User.create({
       username: userData.username.toLowerCase(),
       password: userData.password,
