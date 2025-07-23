@@ -22,7 +22,9 @@ export const signupController = async (
     }
 
     //if user already exists
-    const isUserExist = await User.findOne({ username: userData.username });
+    const isUserExist = await User.findOne({
+      username: userData.username.toLowerCase(),
+    });
     if (isUserExist) {
       return res.status(403).json({
         msg: "User already exists",
@@ -30,12 +32,12 @@ export const signupController = async (
       });
     }
 
+    console.log(userData.username.toLoweCase());
+
     const user = await User.create({
-      username: userData.username,
+      username: userData.username.toLowerCase(),
       password: userData.password,
     });
-
-    console.log("User signup : ", user);
 
     return res.status(200).json({
       msg: "User signup successfully",
@@ -64,7 +66,9 @@ export const signinController = async (
       });
     }
 
-    const user = await User.findOne({ username: userData.username });
+    const user = await User.findOne({
+      username: userData.username.toLowerCase(),
+    });
     if (!user) {
       return res.status(403).json({
         msg: "User does not exists",
