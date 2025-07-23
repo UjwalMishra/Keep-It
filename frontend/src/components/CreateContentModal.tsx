@@ -77,8 +77,6 @@ export const CreateContentModal = ({
     const link = linkRef.current?.value;
     const tags = tagRef.current?.getTags();
 
-    console.log(title, " ", desc, " ", link, " ", tags);
-
     setIsloading(true);
     const token = localStorage.getItem("token");
     try {

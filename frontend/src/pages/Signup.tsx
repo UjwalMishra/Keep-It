@@ -28,7 +28,7 @@ export default function Signup() {
         password,
       });
 
-      toast("Account Created! Please Login now");
+      toast.success("Account Created! Please Login now");
       navigate("/signin");
     } catch (err: any) {
       console.error("Signup failed:", err.response.data.msg);
@@ -49,7 +49,7 @@ export default function Signup() {
             <Input ref={usernameRef} placeholder="Email" required={true} />
             <Input ref={passwordRef} placeholder="Password" required={true} />
           </div>
-          <div className="mt-6">
+          <div className="mt-6 flex justify-center">
             {loading === false ? (
               <Button
                 variant="primary"

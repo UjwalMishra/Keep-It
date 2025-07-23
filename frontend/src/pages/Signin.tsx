@@ -52,7 +52,7 @@ export default function Signin() {
             <Input required={true} ref={usernameRef} placeholder="Email" />
             <Input required={true} ref={passwordRef} placeholder="Password" />
           </div>
-          <div className="mt-6">
+          <div className="mt-6 flex justify-center">
             {loading === false ? (
               <Button
                 variant="primary"

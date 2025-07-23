@@ -80,9 +80,7 @@ export const Card = ({
 
   const [readmore, setReadmore] = React.useState(false);
 
-  console.log("title len -", title.length);
-
-  const displayedTitle = readmore ? title : title.substring(0, 25);
+  const displayedTitle = readmore ? title : title.substring(0, 20);
 
   const toggleTitle = () => {
     setReadmore(!readmore);
@@ -115,9 +113,13 @@ export const Card = ({
                 {type === "instagram" && <InstaIcon />}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-gray-800 font-semibold text-base sm:text-lg leading-tight break-words">
+                <h3
+                  className={`text-gray-800 font-semibold text-base sm:text-lg leading-tight ${
+                    !readmore ? "whitespace-nowrap" : " break-words"
+                  }`}
+                >
                   {displayedTitle}
-                  {title.length > 25 && (
+                  {title.length > 20 && (
                     <span
                       onClick={toggleTitle}
                       className={`text-blue-600 cursor-pointer ml-1 hover:underline ${
