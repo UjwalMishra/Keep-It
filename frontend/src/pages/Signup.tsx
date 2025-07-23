@@ -10,13 +10,11 @@ import Loader from "../components/Loader";
 export default function Signup() {
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
 
   async function signupfxn(e: React.FormEvent) {
-    e.preventDefault(); // Prevent full page reload
+    e.preventDefault();
 
     const username = usernameRef.current?.value;
     const password = passwordRef.current?.value;
@@ -31,16 +29,16 @@ export default function Signup() {
       toast.success("Account Created! Please Login now");
       navigate("/signin");
     } catch (err: any) {
-      console.error("Signup failed:", err.response.data.msg);
-      const message = err.response.data.msg || "Please try again!";
+      console.error("Signup failed:", err.response?.data?.msg);
+      const message = err.response?.data?.msg || "Please try again!";
       toast.error(message);
     }
     setLoading(false);
   }
 
   return (
-    <div className="w-screen h-screen bg-gray-200 flex justify-center items-center">
-      <div className="bg-white rounded-xl shadow-md w-[400px] p-8">
+    <div className="min-h-screen w-full bg-gray-200 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-md w-full max-w-md p-6 sm:p-8">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
           Sign Up
         </h2>
@@ -50,7 +48,7 @@ export default function Signup() {
             <Input ref={passwordRef} placeholder="Password" required={true} />
           </div>
           <div className="mt-6 flex justify-center">
-            {loading === false ? (
+            {!loading ? (
               <Button
                 variant="primary"
                 text="Submit"
@@ -63,10 +61,9 @@ export default function Signup() {
             )}
           </div>
         </form>
-        <div className="mt-2 text-center">
-          Already have an Account ?{" "}
+        <div className="mt-4 text-center text-sm sm:text-base">
+          Already have an Account?{" "}
           <a className="text-blue-500 cursor-pointer" href="/signin">
-            {" "}
             Login
           </a>
         </div>

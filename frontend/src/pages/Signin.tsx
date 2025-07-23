@@ -10,14 +10,11 @@ import Loader from "../components/Loader";
 export default function Signin() {
   const usernameRef = useRef<any>(null);
   const passwordRef = useRef<any>(null);
-
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
 
   async function signinfxn(e: React.FormEvent) {
     e.preventDefault();
-
     const username = usernameRef.current?.value;
     const password = passwordRef.current?.value;
 
@@ -31,19 +28,19 @@ export default function Signin() {
       const jwt = res.data.token;
       localStorage.setItem("token", jwt);
       toast.success("Login successful!");
-
       navigate("/");
     } catch (err: any) {
-      console.error("Signin failed:", err.response.data.msg);
-      const message = err.response.data.msg || "Please try again!";
+      console.error("Signin failed:", err.response?.data?.msg);
+      const message = err.response?.data?.msg || "Please try again!";
       toast.error(message);
     }
     setLoading(false);
   }
 
   return (
-    <div className="w-screen h-screen bg-gray-200 flex justify-center items-center">
-      <div className="bg-white rounded-xl shadow-md w-[400px] p-8">
+    <div className="min-h-screen w-full bg-gray-200 flex flex-col items-center justify-center p-4 gap-6">
+      {/* Signin Form */}
+      <div className="bg-white rounded-xl shadow-md w-full max-w-md p-6 sm:p-8">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
           Sign In
         </h2>
@@ -53,7 +50,7 @@ export default function Signin() {
             <Input required={true} ref={passwordRef} placeholder="Password" />
           </div>
           <div className="mt-6 flex justify-center">
-            {loading === false ? (
+            {!loading ? (
               <Button
                 variant="primary"
                 text="Submit"
@@ -62,17 +59,27 @@ export default function Signin() {
                 type="submit"
               />
             ) : (
-              <Loader color={"black"} />
+              <Loader color="black" />
             )}
           </div>
         </form>
-        <div className="mt-2 text-center">
-          Don't have an Account ?{" "}
+        <div className="mt-4 text-center text-sm sm:text-base">
+          Don&apos;t have an Account?{" "}
           <a className="text-blue-500 cursor-pointer" href="/signup">
-            {" "}
             Create One
           </a>
         </div>
+      </div>
+
+      {/* Demo Info Box */}
+      <div className="bg-white rounded-xl shadow-md w-full max-w-md p-6 sm:p-8 text-center">
+        <p className="font-semibold mb-2">Demo login details:</p>
+        <p>
+          Email: <span className="font-mono">demo_user1@gmail.com</span>
+        </p>
+        <p>
+          Password: <span className="font-mono">qwerty</span>
+        </p>
       </div>
     </div>
   );

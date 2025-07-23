@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react"; // <-- Import React and useEffect
-import { Tweet } from "react-tweet"; // <-- This is correct for Twitter
+import React, { useEffect, useState } from "react";
+import { Tweet } from "react-tweet";
 import DeleteIcon from "../../icons/DeleteIcon";
 import ArrowIcon from "../../icons/ArrowIcon";
 import XIcons from "../../icons/XIcons";
@@ -16,7 +16,6 @@ import Loader from "../Loader";
 const getTweetId = (url: string): string => {
   try {
     const urlObject = new URL(url);
-
     const pathParts = urlObject.pathname.split("/");
     return pathParts[pathParts.length - 1];
   } catch (e) {
@@ -62,6 +61,12 @@ export const Card = ({
   function getYouTubeEmbedLink(link: string): string {
     try {
       const url = new URL(link);
+      const playlistId = url.searchParams.get("list");
+
+      if (playlistId) {
+        return `https://www.youtube.com/embed/videoseries?list=${playlistId}`;
+      }
+
       if (url.hostname === "youtu.be") {
         return `https://www.youtube.com/embed/${url.pathname.slice(1)}`;
       }

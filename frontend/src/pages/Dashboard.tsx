@@ -206,7 +206,7 @@ export const Dashboard = () => {
                 setSearchResults={setSearchResults}
                 setSearchParam={setSearchParam}
               />
-              <div className="absolute right-0 pr-2">
+              <div className="hidden md:block xl:hidden absolute right-2 top-2">
                 <SearchIcon />
               </div>
             </div>
@@ -217,9 +217,9 @@ export const Dashboard = () => {
                 <Button
                   variant="secondary"
                   text="Share"
-                  size="md"
+                  size="sm"
                   onClick={shareFxn}
-                  startIcon={<ShareIcon size="lg" />}
+                  startIcon={<ShareIcon size="sm" />}
                 />
               ) : (
                 <Loader color={"black"} />
