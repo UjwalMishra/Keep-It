@@ -44,10 +44,31 @@ export const postContentController = async (
     let previewImage = "";
 
     if (contentData.type === "web articles" && contentData.link) {
+      let browser;
       try {
-        const browser = await puppeteer.launch();
+        browser = await puppeteer.launch({
+          headless: true,
+          args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+          ],
+        });
+
         const page = await browser.newPage();
-        await page.goto(contentData.link, { waitUntil: "networkidle2" });
+        await page.setUserAgent(
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+        );
+        await page.setViewport({ width: 1280, height: 800 });
+
+        await page.goto(contentData.link, {
+          waitUntil: "domcontentloaded", // Wait for initial HTML to load
+          timeout: 60000,
+        });
+
+        await page.waitForSelector("body");
+
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
 
         const metadata = await page.evaluate(() => {
           const title = document.querySelector("title")?.innerText;
@@ -60,13 +81,22 @@ export const postContentController = async (
           return { title, description, image };
         });
 
-        await browser.close();
-
         finalTitle = metadata?.title || contentData.title;
         finalDesc = metadata?.description || contentData.desc;
         previewImage = metadata?.image || "";
       } catch (err) {
-        console.warn("⚠️ Puppeteer failed:", err);
+        console.warn(
+          `⚠️ Puppeteer failed for link: ${contentData.link}. Error:`,
+          err
+        );
+        // Fallback to user-provided data
+        finalTitle = contentData.title;
+        finalDesc = contentData.desc;
+        previewImage = "";
+      } finally {
+        if (browser) {
+          await browser.close();
+        }
       }
     }
 
@@ -79,8 +109,6 @@ export const postContentController = async (
       userId: req.userId,
       tags: tagIds,
     });
-
-    console.log(content);
 
     return res.status(200).json({
       success: true,
@@ -107,7 +135,6 @@ export const getContentController = async (
         msg: "No content found, Pls add some",
       });
     }
-    // console.log(JSON.stringify(content));
 
     return res.status(200).json({
       success: true,
