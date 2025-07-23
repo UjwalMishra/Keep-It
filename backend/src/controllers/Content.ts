@@ -2,13 +2,7 @@ import { Request, Response } from "express";
 import { contentZodSchema } from "../zod-schema/Content";
 import { Content } from "../models/Content";
 import { Tag } from "../models/Tag";
-// import urlMetadata from "url-metadata";
-
-import metascraper from "metascraper";
-import metascraperImage from "metascraper-image";
-import metascraperTitle from "metascraper-title";
-
-const scraper = metascraper([metascraperImage(), metascraperTitle()]);
+import puppeteer from "puppeteer";
 
 interface ContentRequest extends Request {
   userId?: string;
@@ -51,14 +45,28 @@ export const postContentController = async (
 
     if (contentData.type === "web articles" && contentData.link) {
       try {
-        const got = (await import("got")).default;
-        const { body: html, url } = await got(contentData.link);
-        const meta = await scraper({ html, url });
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+        await page.goto(contentData.link, { waitUntil: "networkidle2" });
 
-        finalTitle = meta?.title || contentData.title;
-        previewImage = meta?.image || "";
+        const metadata = await page.evaluate(() => {
+          const title = document.querySelector("title")?.innerText;
+          const description = document
+            .querySelector('meta[name="description"]')
+            ?.getAttribute("content");
+          const image = document
+            .querySelector('meta[property="og:image"]')
+            ?.getAttribute("content");
+          return { title, description, image };
+        });
+
+        await browser.close();
+
+        finalTitle = metadata?.title || contentData.title;
+        finalDesc = metadata?.description || contentData.desc;
+        previewImage = metadata?.image || "";
       } catch (err) {
-        console.warn("⚠️ Metascraper failed:", err);
+        console.warn("⚠️ Puppeteer failed:", err);
       }
     }
 

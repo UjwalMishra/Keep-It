@@ -24,6 +24,7 @@
     "metascraper-image": "^5.49.1",
     "metascraper-title": "^5.49.1",
     "mongoose": "^8.16.1",
+    "puppeteer": "^24.14.0",
     "ts-randomstring": "^1.0.8",
     "types": "file:.cors",
     "typescript": "^5.8.3",
