@@ -1,14 +1,17 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Input from "../components/Input";
 import { Button } from "../components/ui/Button";
 import axios from "axios";
 import { BACKEND_URL } from "../config";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import Loader from "../components/Loader";
 
 export default function Signin() {
   const usernameRef = useRef<any>(null);
   const passwordRef = useRef<any>(null);
+
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -18,6 +21,7 @@ export default function Signin() {
     const username = usernameRef.current?.value;
     const password = passwordRef.current?.value;
 
+    setLoading(true);
     try {
       const res = await axios.post(`${BACKEND_URL}/auth/signin`, {
         username,
@@ -34,6 +38,7 @@ export default function Signin() {
       const message = err.response.data.msg || "Please try again!";
       toast.error(message);
     }
+    setLoading(false);
   }
 
   return (
@@ -48,13 +53,17 @@ export default function Signin() {
             <Input required={true} ref={passwordRef} placeholder="Password" />
           </div>
           <div className="mt-6">
-            <Button
-              variant="primary"
-              text="Submit"
-              size="lg"
-              fullWidth={true}
-              type="submit"
-            />
+            {loading === false ? (
+              <Button
+                variant="primary"
+                text="Submit"
+                size="lg"
+                fullWidth={true}
+                type="submit"
+              />
+            ) : (
+              <Loader color={"black"} />
+            )}
           </div>
         </form>
         <div className="mt-2 text-center">

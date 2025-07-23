@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"; // <-- Import React and useEffect
+import React, { useEffect, useState } from "react"; // <-- Import React and useEffect
 import { Tweet } from "react-tweet"; // <-- This is correct for Twitter
 import DeleteIcon from "../../icons/DeleteIcon";
 import ArrowIcon from "../../icons/ArrowIcon";
@@ -10,17 +10,18 @@ import toast from "react-hot-toast";
 import NotesIcon from "../../icons/NotesIcon";
 import WebIcon from "../../icons/WebIcon";
 import InstaIcon from "../../icons/InstaIcon";
+import Loader from "../Loader";
 
 // Helper function to get the ID from a Tweet URL
 const getTweetId = (url: string): string => {
   try {
     const urlObject = new URL(url);
-    // The ID is the last part of the path, e.g., /status/123456789
+
     const pathParts = urlObject.pathname.split("/");
     return pathParts[pathParts.length - 1];
   } catch (e) {
     console.error("Invalid Tweet URL:", url);
-    return ""; // Return empty string if the URL is invalid
+    return "";
   }
 };
 
@@ -47,17 +48,17 @@ export const Card = ({
   shared,
   previewImage,
 }: CardProps) => {
-  // This useEffect tells Instagram's script (from index.html) to render the post.
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     if (type === "instagram") {
-      // (window as any) tells TypeScript to ignore that it doesn't know about `instgrm`
       if ((window as any).instgrm) {
         (window as any).instgrm.Embeds.process();
       }
     }
-  }, [link, type]); // It re-runs if the link or card type changes.
+  }, [link, type]);
 
-  // --- Helper functions ---
+  // --- Helper functions for YT ---
   function getYouTubeEmbedLink(link: string): string {
     try {
       const url = new URL(link);
@@ -77,7 +78,18 @@ export const Card = ({
   const ytLink = type === "youtube" ? getYouTubeEmbedLink(link) : "";
   const tweetId = type === "x" ? getTweetId(link) : "";
 
+  const [readmore, setReadmore] = React.useState(false);
+
+  console.log("title len -", title.length);
+
+  const displayedTitle = readmore ? title : title.substring(0, 25);
+
+  const toggleTitle = () => {
+    setReadmore(!readmore);
+  };
+
   async function deletefxn() {
+    setLoading(true);
     const token = localStorage.getItem("token");
     await axios.delete(`${BACKEND_URL}/content/delete-content`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -85,6 +97,7 @@ export const Card = ({
     });
     refresh();
     toast.success("Content deleted.", { icon: "🗑️", duration: 3000 });
+    setLoading(false);
   }
 
   return (
@@ -103,25 +116,38 @@ export const Card = ({
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-gray-800 font-semibold text-base sm:text-lg leading-tight break-words">
-                  {title}
+                  {displayedTitle}
+                  {title.length > 25 && (
+                    <span
+                      onClick={toggleTitle}
+                      className={`text-blue-600 cursor-pointer ml-1 hover:underline ${
+                        !readmore ? "text-xl" : "text-sm"
+                      }`}
+                    >
+                      {readmore ? "Show less" : "...."}
+                    </span>
+                  )}
                 </h3>
-                <p className="text-gray-500 text-sm capitalize mt-1">{type}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-gray-500 text-sm capitalize mt-1">
+                    {type}
+                  </p>
+                  {/* Tags */}
+                  {tags && tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {tags.map((tag, i) => (
+                        <span
+                          key={i}
+                          className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded-full break-all"
+                        >
+                          #{tag.title}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-
-            {/* Tags */}
-            {tags && tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {tags.map((tag, i) => (
-                  <span
-                    key={i}
-                    className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded-full break-all"
-                  >
-                    #{tag.title}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Actions */}
@@ -141,7 +167,11 @@ export const Card = ({
                 className="p-2 hover:bg-red-100 text-red-600 rounded-lg transition-colors cursor-pointer"
                 onClick={deletefxn}
               >
-                <DeleteIcon />
+                {loading === false ? (
+                  <DeleteIcon />
+                ) : (
+                  <Loader color={"black"} />
+                )}
               </button>
             )}
           </div>
@@ -149,9 +179,9 @@ export const Card = ({
       </div>
 
       {/* Content */}
-      <div className="p-4 sm:p-6 flex-grow">
-        <div className="w-full h-[200px] sm:h-[250px] rounded-lg overflow-hidden">
-          {/* x (Twitter) - CORRECTED */}
+      <div className="sm:p-6 flex-grow">
+        <div className="w-full h-[200px] flex flex-col justify-center  rounded-lg overflow-hidden">
+          {/* x (Twitter) */}
           {type === "x" && tweetId && (
             <div className="w-full h-full flex items-center justify-center">
               <div className="w-full h-full max-w-[320px] mx-auto scrollbar-thin scrollbar-thumb-gray-50 scrollbar-track-gray-50 hover:scrollbar-thumb-gray-100 overflow-auto">
@@ -174,7 +204,7 @@ export const Card = ({
             />
           )}
 
-          {/* insta - CORRECTED */}
+          {/* insta */}
           {type === "instagram" && (
             <div className="w-full h-full flex items-center justify-center">
               <div className="w-full h-full max-w-[320px] mx-auto scrollbar-thin scrollbar-thumb-gray-50 scrollbar-track-gray-50 hover:scrollbar-thumb-gray-100 overflow-auto">
@@ -205,25 +235,39 @@ export const Card = ({
             </div>
           )}
 
-          {/* web articles */}
+          {/* Web Articles */}
           {type === "web articles" && (
-            <div className="w-full h-full">
-              {link && (
+            <div className="w-full">
+              {previewImage ? (
                 <a
-                  className=" cursor-pointer"
                   href={link}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="block"
                 >
                   <img
                     src={previewImage}
                     alt={title}
-                    className="w-full h-full object-cover rounded-lg"
-                    onError={(e) => {
-                      e.currentTarget.src = "/api/placeholder/400/250";
-                    }}
+                    className="w-full h-[180px] object-cover rounded-lg"
                   />
                 </a>
+              ) : (
+                <div className="p-8 bg-gray-50 border border-gray-200 rounded-lg">
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <p className="text-gray-700 mb-3 text-center text-sm">
+                      ⚠️ Preview image not available for this article.
+                    </p>
+                    <p className="text-sm text-gray-800">
+                      <strong>Description:</strong>{" "}
+                      {desc || "No description provided."}
+                    </p>
+                  </a>
+                </div>
               )}
             </div>
           )}

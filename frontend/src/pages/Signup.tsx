@@ -1,14 +1,17 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Input from "../components/Input";
 import { Button } from "../components/ui/Button";
 import axios from "axios";
 import { BACKEND_URL } from "../config";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import Loader from "../components/Loader";
 
 export default function Signup() {
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -18,6 +21,7 @@ export default function Signup() {
     const username = usernameRef.current?.value;
     const password = passwordRef.current?.value;
 
+    setLoading(true);
     try {
       await axios.post(`${BACKEND_URL}/auth/signup`, {
         username,
@@ -31,6 +35,7 @@ export default function Signup() {
       const message = err.response.data.msg || "Please try again!";
       toast.error(message);
     }
+    setLoading(false);
   }
 
   return (
@@ -45,13 +50,17 @@ export default function Signup() {
             <Input ref={passwordRef} placeholder="Password" required={true} />
           </div>
           <div className="mt-6">
-            <Button
-              variant="primary"
-              text="Submit"
-              size="lg"
-              fullWidth={true}
-              type="submit"
-            />
+            {loading === false ? (
+              <Button
+                variant="primary"
+                text="Submit"
+                size="lg"
+                fullWidth={true}
+                type="submit"
+              />
+            ) : (
+              <Loader color={"black"} />
+            )}
           </div>
         </form>
         <div className="mt-2 text-center">

@@ -16,6 +16,7 @@ import UserIcon from "../icons/UserIcon";
 import SearchContent from "../components/SearchContent";
 import SearchIcon from "../icons/SearchIcon";
 import LogoutIcon from "../icons/LogoutIcon";
+import Loader from "../components/Loader";
 
 export const Dashboard = () => {
   const [type, setType] = useState("All");
@@ -23,6 +24,9 @@ export const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchParam, setSearchParam] = useState("");
+
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -48,6 +52,7 @@ export const Dashboard = () => {
       : contents.filter((content) => content.type === type);
 
   async function shareFxn() {
+    setLoading(true);
     const token = localStorage.getItem("token");
     const shareLink = await axios.post(
       `${BACKEND_URL}/link/share`,
@@ -60,7 +65,7 @@ export const Dashboard = () => {
     );
     copy(`${FRONTEND_URL}share/${shareLink.data.link}`);
     copy(`${FRONTEND_URL}share/${shareLink.data.link}`);
-
+    setLoading(false);
     toast.success("Link Copied!");
   }
 
@@ -165,13 +170,17 @@ export const Dashboard = () => {
                 onClick={() => setModalOpen(true)}
                 startIcon={<AddIcon size="lg" />}
               />
-              <Button
-                variant="secondary"
-                text="Share"
-                size="md"
-                onClick={shareFxn}
-                startIcon={<ShareIcon size="lg" />}
-              />
+              {loading === false ? (
+                <Button
+                  variant="secondary"
+                  text="Share"
+                  size="md"
+                  onClick={shareFxn}
+                  startIcon={<ShareIcon size="lg" />}
+                />
+              ) : (
+                <Loader color={"black"} />
+              )}
               <Button
                 variant="secondary"
                 text="Log out"
@@ -204,13 +213,17 @@ export const Dashboard = () => {
 
             {/* Action buttons */}
             <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                text="Share"
-                size="sm"
-                onClick={shareFxn}
-                startIcon={<ShareIcon size="sm" />}
-              />
+              {loading === false ? (
+                <Button
+                  variant="secondary"
+                  text="Share"
+                  size="md"
+                  onClick={shareFxn}
+                  startIcon={<ShareIcon size="lg" />}
+                />
+              ) : (
+                <Loader color={"black"} />
+              )}
               <Button
                 variant="secondary"
                 text="Logout"
