@@ -12,6 +12,7 @@ import NotesIcon from "../icons/NotesIcon";
 import WebIcon from "../icons/WebIcon";
 import Loader from "./Loader";
 import toast from "react-hot-toast";
+import DescriptionInput from "./DescriptionInput";
 
 //@ts-ignore
 export enum ContentType {
@@ -213,7 +214,7 @@ export const CreateContentModal = ({
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Description
                     </label>
-                    <Input
+                    <DescriptionInput
                       required={
                         type == "web articles" || type == "notes" ? true : false
                       }
