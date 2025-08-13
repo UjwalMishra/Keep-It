@@ -25,6 +25,8 @@ export const Dashboard = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchParam, setSearchParam] = useState("");
 
+  const [contentToEdit, setContentToEdit] = useState<any | null>(null);
+
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -84,6 +86,20 @@ export const Dashboard = () => {
     displayContent = [];
   }
 
+  //edit content logic
+  const handleEdit = (contentId: string) => {
+    const dataToEdit = contents.find((content) => content._id === contentId);
+    if (dataToEdit) {
+      setContentToEdit(dataToEdit); // Set the full object to edit
+      setModalOpen(true); // Open the modal
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setContentToEdit(null);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 text-gray-900 relative font-sans">
       {/* Sidebar */}
@@ -99,8 +115,9 @@ export const Dashboard = () => {
         {/* Modal */}
         <CreateContentModal
           open={modalOpen}
-          onClose={() => setModalOpen(false)}
+          onClose={handleCloseModal}
           refresh={refresh}
+          initialData={contentToEdit}
         />
 
         {/* Mobile Header with Hamburger */}
@@ -253,6 +270,7 @@ export const Dashboard = () => {
                     className="transition-transform duration-300 transform hover:scale-[1.02]"
                   >
                     <Card
+                      onEdit={handleEdit}
                       title={title}
                       link={link}
                       type={type}
