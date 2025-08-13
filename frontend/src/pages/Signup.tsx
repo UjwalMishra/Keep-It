@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Input from "../components/Input";
 import { Button } from "../components/ui/Button";
 import axios from "axios";
@@ -8,16 +8,13 @@ import toast from "react-hot-toast";
 import Loader from "../components/Loader";
 
 export default function Signup() {
-  const usernameRef = useRef<HTMLInputElement>(null);
-  const passwordRef = useRef<HTMLInputElement>(null);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   async function signupfxn(e: React.FormEvent) {
     e.preventDefault();
-
-    const username = usernameRef.current?.value;
-    const password = passwordRef.current?.value;
 
     setLoading(true);
     try {
@@ -44,8 +41,19 @@ export default function Signup() {
         </h2>
         <form onSubmit={signupfxn}>
           <div className="flex flex-col justify-center items-center space-y-4">
-            <Input ref={usernameRef} placeholder="Email" required={true} />
-            <Input ref={passwordRef} placeholder="Password" required={true} />
+            <Input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Email"
+              required={true}
+            />
+            <Input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              required={true}
+              type="password"
+            />
           </div>
           <div className="mt-6 flex justify-center">
             {!loading ? (
