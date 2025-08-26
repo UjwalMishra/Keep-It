@@ -21,7 +21,7 @@ const defaultStyle =
   "rounded-md flex items-center justify-center cursor-pointer";
 
 const sizeStyles = {
-  sm: "text-[12px] px-4 py-1",
+  sm: "text-[12px] px-2 py-1",
   md: "text-[16px] px-5 py-1",
   lg: "text-[18px] px-6 py-2",
 };

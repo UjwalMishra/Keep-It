@@ -18,18 +18,26 @@ const TagInput: ForwardRefRenderFunction<TagInputRef, TagInputProps> = (
 
   useImperativeHandle(ref, () => ({
     getTags: () => tags,
-
     setTags: (newTags: string[]) => {
-      setTags(newTags || []);
+      if (Array.isArray(newTags)) {
+        // Sanitize tags set externally to ensure no '#' is stored in state
+        const sanitizedTags = newTags.map((tag) =>
+          tag.toLowerCase().replace(/^#/, "")
+        );
+        setTags(sanitizedTags);
+      } else {
+        setTags([]);
+      }
     },
   }));
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if ((e.key === "Enter" || e.key === ",") && input.trim() !== "") {
       e.preventDefault();
-      const newTag = input.trim().toLowerCase();
+      // Sanitize user input to remove any manually typed '#'
+      const newTag = input.trim().toLowerCase().replace(/^#/, "");
 
-      if (!tags.includes(newTag)) {
+      if (newTag && !tags.includes(newTag)) {
         setTags([...tags, newTag]);
       }
       setInput("");
@@ -51,7 +59,8 @@ const TagInput: ForwardRefRenderFunction<TagInputRef, TagInputProps> = (
           key={i}
           className="flex items-center gap-1.5 bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-lg"
         >
-          <span>{tag}</span>
+          {/* Display rendered tags with a '#' */}
+          <span>#{tag}</span>
           <button
             type="button"
             onClick={() => removeTag(i)}
@@ -61,14 +70,18 @@ const TagInput: ForwardRefRenderFunction<TagInputRef, TagInputProps> = (
           </button>
         </div>
       ))}
-      <input
-        type="text"
-        value={input}
-        placeholder="eg. #tech, #webdev"
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={handleKeyDown}
-        className="flex-grow bg-transparent text-sm p-1 focus:outline-none"
-      />
+
+      <div className="flex-grow flex items-center min-w-[80px]">
+        <span className="text-gray-500 text-sm pl-1">#</span>
+        <input
+          type="text"
+          value={input}
+          placeholder="Add a tag"
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className="w-full bg-transparent text-sm p-1 pl-0 focus:outline-none"
+        />
+      </div>
     </div>
   );
 };

@@ -39,13 +39,21 @@ export const Dashboard = () => {
   }, []);
 
   const user = getDecodedToken();
+
   let contents: any[] = [];
   let refresh = () => {};
+  let contentLoading = true;
 
   if (token) {
-    const contentHook = useContent();
-    contents = contentHook.contents;
-    refresh = contentHook.refresh;
+    const {
+      contents: fetchedContents,
+      refresh: refreshContents,
+      loading: fetchedLoading,
+    } = useContent();
+
+    contents = fetchedContents;
+    refresh = refreshContents;
+    contentLoading = fetchedLoading;
   }
 
   const filteredContent =
@@ -176,7 +184,7 @@ export const Dashboard = () => {
                   setSearchResults={setSearchResults}
                   setSearchParam={setSearchParam}
                 />
-                <div className="absolute right-0 pr-2">
+                <div className=" absolute right-0 pr-2">
                   <SearchIcon />
                 </div>
               </div>
@@ -217,13 +225,13 @@ export const Dashboard = () => {
         <div className="lg:hidden sticky top-16 bg-white/90 backdrop-blur-lg mx-4 mt-4 px-4 py-3 rounded-xl shadow-sm border border-gray-200 z-20">
           <div className="flex items-center justify-between gap-3">
             {/* Search */}
-            <div className="flex-1 flex justify-center items-center gap-2 relative max-w-xs">
+            <div className="flex-1 flex  items-center gap-2 relative max-w-xs">
               <SearchContent
                 refresh={refresh}
                 setSearchResults={setSearchResults}
                 setSearchParam={setSearchParam}
               />
-              <div className="hidden md:block xl:hidden absolute right-2 top-2">
+              <div className="hidden md:block xl:hidden absolute right-10">
                 <SearchIcon />
               </div>
             </div>
@@ -257,7 +265,11 @@ export const Dashboard = () => {
 
         {/* Content Cards */}
         <div className="p-4 xl:p-6 mt-4 xl:mt-8">
-          {displayContent?.length === 0 ? (
+          {contentLoading ? (
+            <div className="flex justify-center items-center mt-20">
+              <Loader color={"black"} />
+            </div>
+          ) : displayContent?.length === 0 ? (
             <div className="text-2xl sm:text-3xl xl:text-4xl text-center font-semibold text-gray-600 mt-12">
               No Content found!
             </div>

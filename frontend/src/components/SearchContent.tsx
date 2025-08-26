@@ -42,7 +42,7 @@ const SearchContent = ({
   return (
     <div>
       <input
-        className="w-full sm:w-[150px] md:w-[250px] lg:w-[300px] px-3 py-1 border rounded-xl "
+        className="w-full sm:w-[200px] md:w-[300px] lg:w-[300px] px-3 py-1 border rounded-xl "
         placeholder="Search..."
         onChange={filterHandler}
       />

@@ -127,33 +127,34 @@ export const Card = ({
                 <div className="flex-1 min-w-0">
                   <h3
                     className={`text-gray-800 font-semibold text-base sm:text-lg leading-tight ${
-                      !readmore ? "whitespace-nowrap" : " break-words"
+                      !readmore ? "truncate" : "break-words"
                     }`}
                   >
                     {displayedTitle}
                     {title.length > 20 && (
                       <span
                         onClick={toggleTitle}
-                        className={`text-blue-600 cursor-pointer ml-1 hover:underline ${
+                        className={`text-blue-600 cursor-pointer ml-0 hover:underline ${
                           !readmore ? "text-xl" : "text-sm"
                         }`}
                       >
-                        {readmore ? "Show less" : "...."}
+                        {readmore ? " show less" : "...."}
                       </span>
                     )}
                   </h3>
 
-                  <div className="flex items-center gap-2">
-                    <p className="text-gray-500 text-sm capitalize mt-1">
+                  {/* --- MODIFIED RESPONSIVE AREA --- */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-1.5">
+                    <div className="text-gray-500 text-sm capitalize">
                       {type}
-                    </p>
+                    </div>
                     {/* Tags */}
                     {tags && tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {tags.map((tag, i) => (
                           <span
                             key={i}
-                            className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded-full break-all"
+                            className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded-full"
                           >
                             #{tag.title}
                           </span>
@@ -202,8 +203,8 @@ export const Card = ({
         </div>
 
         {/* Content */}
-        <div className="sm:p-6 flex-grow">
-          <div className="w-full h-[200px] flex flex-col justify-center  rounded-lg overflow-hidden">
+        <div className="p-4 sm:p-6 flex-grow">
+          <div className="w-full h-[200px] flex flex-col justify-center rounded-lg overflow-hidden">
             {/* x (Twitter) */}
             {type === "x" && tweetId && (
               <div className="w-full h-full flex items-center justify-center">
@@ -275,7 +276,7 @@ export const Card = ({
                     />
                   </a>
                 ) : (
-                  <div className="p-8 bg-gray-50 border border-gray-200 rounded-lg">
+                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
                     <a
                       href={link}
                       target="_blank"
