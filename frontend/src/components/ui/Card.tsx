@@ -35,7 +35,8 @@ interface CardProps {
   refresh: () => void;
   previewImage: string;
   shared: boolean;
-  onEdit: (id: string) => void;
+  onEdit?: (id: string) => void;
+  openNotesDetail: (id: string) => void;
 }
 
 export const Card = ({
@@ -49,6 +50,7 @@ export const Card = ({
   shared,
   previewImage,
   onEdit,
+  openNotesDetail,
 }: CardProps) => {
   const [loading, setLoading] = useState(false);
 
@@ -105,7 +107,10 @@ export const Card = ({
   }
 
   function editHandler() {
-    onEdit(id);
+    onEdit?.(id);
+  }
+  function handleOpenNotesInDetail() {
+    openNotesDetail(id);
   }
 
   return (
@@ -143,7 +148,6 @@ export const Card = ({
                     )}
                   </h3>
 
-                  {/* --- MODIFIED RESPONSIVE AREA --- */}
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-1.5">
                     <div className="text-gray-500 text-sm capitalize">
                       {type}
@@ -171,7 +175,7 @@ export const Card = ({
               {!shared && (
                 <button
                   className="p-2 hover:bg-gray-100 text-xl rounded-lg transition-colors font-medium text-gray-700 cursor-pointer"
-                  onClick={editHandler} // This now works correctly
+                  onClick={editHandler}
                 >
                   <EditIcon />
                 </button>
@@ -243,17 +247,20 @@ export const Card = ({
 
             {/* notes */}
             {type === "notes" && (
-              <div className="flex flex-col h-full">
+              <div
+                className="flex flex-col h-full cursor-pointer"
+                onClick={handleOpenNotesInDetail}
+              >
                 <div className="flex items-center mb-3">
                   <span className="px-2">
                     {" "}
                     <NotesIcon />{" "}
                   </span>
-                  <p className="text-sm sm:text-md font-medium text-gray-700">
+                  <p className="text-sm sm:text-md font-medium text-gray-700 ">
                     Description
                   </p>
                 </div>
-                <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg text-sm text-gray-800 whitespace-pre-wrap font-sans leading-relaxed flex-1 overflow-auto">
+                <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg text-sm text-gray-800 whitespace-pre-wrap font-sans leading-relaxed flex-1 overflow-auto ">
                   {desc || "No content provided."}
                 </div>
               </div>

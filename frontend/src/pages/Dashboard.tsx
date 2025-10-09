@@ -17,6 +17,7 @@ import SearchContent from "../components/SearchContent";
 import SearchIcon from "../icons/SearchIcon";
 import LogoutIcon from "../icons/LogoutIcon";
 import Loader from "../components/Loader";
+import NotesInDetail from "../components/NotesInDetail";
 
 export const Dashboard = () => {
   const [type, setType] = useState("All");
@@ -26,6 +27,20 @@ export const Dashboard = () => {
   const [searchParam, setSearchParam] = useState("");
 
   const [contentToEdit, setContentToEdit] = useState<any | null>(null);
+
+  const [showNotes, setShowNotes] = useState(false);
+  const [notesInDetailContent, setNotesInDetailContent] = useState([]);
+
+  function openNotesDetail(id: string) {
+    const notesContent = contents.find((content) => content._id === id);
+
+    setNotesInDetailContent(notesContent);
+    setShowNotes(true);
+  }
+
+  function closeNotes() {
+    setShowNotes(false);
+  }
 
   const [loading, setLoading] = useState(false);
 
@@ -127,6 +142,19 @@ export const Dashboard = () => {
           refresh={refresh}
           initialData={contentToEdit}
         />
+
+        {/* showing notes in detail  */}
+        {showNotes && (
+          <div className="lg:ml-56 xl:ml-64 transition-all duration-300">
+            {/* Scrollable content area */}
+            <div className="overflow-y-auto mt-6 pr-3 flex-1">
+              <NotesInDetail
+                content={notesInDetailContent}
+                closeNotes={closeNotes}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Mobile Header with Hamburger */}
         <div className="lg:hidden sticky top-0 bg-white/90 backdrop-blur-lg px-4 py-3 shadow-sm border-b border-gray-200 z-30">
@@ -292,6 +320,7 @@ export const Dashboard = () => {
                       refresh={refresh}
                       shared={false}
                       previewImage={previewImage}
+                      openNotesDetail={openNotesDetail}
                     />
                   </div>
                 )

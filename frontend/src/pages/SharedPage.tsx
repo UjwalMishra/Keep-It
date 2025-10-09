@@ -5,13 +5,29 @@ import { useEffect, useState } from "react";
 import { Card } from "../components/ui/Card";
 import Sidebar from "../components/Sidebar";
 import Loader from "../components/Loader";
+import NotesInDetail from "../components/NotesInDetail";
 
 export default function SharedPage() {
-  const [contents, setContents] = useState([]);
+  const [contents, setContents] = useState<any[]>([]);
   const [type, setType] = useState("All");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const [showNotes, setShowNotes] = useState(false);
+  const [notesInDetailContent, setNotesInDetailContent] = useState([]);
+
+  function openNotesDetail(id: string) {
+    const notesContent = contents.find((content) => content._id === id);
+
+    setNotesInDetailContent(notesContent);
+
+    console.log("Opening NotesInDetail...");
+    setShowNotes(true);
+  }
+
+  function closeNotes() {
+    setShowNotes(false);
+  }
   const { sharelink } = useParams();
 
   async function getSharedItems() {
@@ -118,6 +134,19 @@ export default function SharedPage() {
           </div>
         </div>
 
+        {/* showing notes in detail  */}
+        {showNotes && (
+          <div className="lg:ml-56 xl:ml-64 transition-all duration-300">
+            {/* Scrollable content area */}
+            <div className="overflow-y-auto mt-6 pr-3 flex-1">
+              <NotesInDetail
+                content={notesInDetailContent}
+                closeNotes={closeNotes}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Content Section */}
         <div className="p-4 xl:p-6 mt-4 xl:mt-8">
           {loading ? (
@@ -162,6 +191,7 @@ export default function SharedPage() {
                     className="transition-transform duration-300 transform hover:scale-[1.02]"
                   >
                     <Card
+                      openNotesDetail={openNotesDetail}
                       title={title}
                       link={link}
                       type={type}
