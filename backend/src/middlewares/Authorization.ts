@@ -1,50 +1,38 @@
-import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import dotnev from "dotenv";
-
-dotnev.config();
-
-interface AuthenticatedRequest extends Request {
-  userId?: string;
-}
+import { NextFunction, Response } from "express";
+import { AuthRequest } from "../types/express";
+import { verifyAccessToken } from "../utils/tokens";
 
 export const authorizationMiddleware = (
-  req: AuthenticatedRequest,
+  req: AuthRequest,
   res: Response,
   next: NextFunction
 ): void => {
   try {
     const header = req.headers.authorization;
-    if (!header || !header.startsWith("Bearer")) {
-      res.status(403).json({
-        msg: "No token found",
+    if (!header || !header.startsWith("Bearer ")) {
+      res.status(401).json({
+        msg: "Authentication required",
         success: false,
       });
       return;
     }
 
-    const token = header.split(" ")[1];
-
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      throw new Error("JWT SECRET not found");
-    }
-    const decoded = jwt.verify(token, secret) as jwt.JwtPayload;
-    if (decoded.userId) {
-      req.userId = decoded.userId;
-      next();
-    } else {
-      res.status(403).json({
+    const token = header.slice(7).trim();
+    if (!token) {
+      res.status(401).json({
+        msg: "Authentication required",
         success: false,
-        msg: "token not have userId || wrong token",
       });
       return;
     }
-  } catch (err) {
-    res.status(500).json({
+
+    const decoded = verifyAccessToken(token);
+    req.userId = decoded.userId;
+    next();
+  } catch {
+    res.status(401).json({
       success: false,
-      msg: err,
+      msg: "Invalid or expired token",
     });
-    return;
   }
 };

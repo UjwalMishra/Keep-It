@@ -1,19 +1,22 @@
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 
-dotenv.config();
-
-export const connectDB = async () => {
-  const mongoUrl: string | undefined = process.env.MONGODB_URL;
+export const connectDB = async (): Promise<void> => {
+  const mongoUrl = process.env.MONGODB_URL;
 
   if (!mongoUrl) {
     throw new Error("MONGODB_URL is not defined in the environment variables.");
   }
 
+  mongoose.set("strictQuery", true);
+
   try {
-    await mongoose.connect(mongoUrl);
+    await mongoose.connect(mongoUrl, {
+      serverSelectionTimeoutMS: 10_000,
+      maxPoolSize: 10,
+    });
     console.log("DB connected");
   } catch (err) {
-    console.log("DB connection failed ", err);
+    console.error("DB connection failed", err);
+    throw err;
   }
 };

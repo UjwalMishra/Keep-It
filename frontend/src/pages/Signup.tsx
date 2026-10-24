@@ -1,36 +1,20 @@
 import { useState } from "react";
 import Input from "../components/Input";
 import { Button } from "../components/ui/Button";
-import axios from "axios";
-import { BACKEND_URL } from "../config";
-import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 import Loader from "../components/Loader";
+import { useSignup } from "../features/auth/hooks";
 
 export default function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const signup = useSignup();
 
-  async function signupfxn(e: React.FormEvent) {
+  function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-
-    setLoading(true);
-    try {
-      await axios.post(`${BACKEND_URL}/auth/signup`, {
-        username,
-        password,
-      });
-
-      toast.success("Account Created! Please Login now");
-      navigate("/signin");
-    } catch (err: any) {
-      console.error("Signup failed:", err.response?.data?.msg);
-      const message = err.response?.data?.msg || "Please try again!";
-      toast.error(message);
-    }
-    setLoading(false);
+    signup.mutate({
+      username: username.trim(),
+      password,
+    });
   }
 
   return (
@@ -39,33 +23,38 @@ export default function Signup() {
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
           Sign Up
         </h2>
-        <form onSubmit={signupfxn}>
+        <form onSubmit={onSubmit}>
           <div className="flex flex-col justify-center items-center space-y-4">
             <Input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Email"
-              required={true}
+              placeholder="Username or email"
+              required
+              autoComplete="username"
+              maxLength={64}
             />
             <Input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              required={true}
+              placeholder="Password (min 8 characters)"
+              required
               type="password"
+              autoComplete="new-password"
+              minLength={8}
+              maxLength={72}
             />
           </div>
           <div className="mt-6 flex justify-center">
-            {!loading ? (
+            {signup.isPending ? (
+              <Loader color="black" />
+            ) : (
               <Button
                 variant="primary"
                 text="Submit"
                 size="lg"
-                fullWidth={true}
+                fullWidth
                 type="submit"
               />
-            ) : (
-              <Loader color={"black"} />
             )}
           </div>
         </form>

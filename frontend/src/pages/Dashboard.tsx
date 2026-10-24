@@ -1,218 +1,95 @@
 import { Button } from "../components/ui/Button";
 import { AddIcon } from "../icons/AddIcon";
 import { ShareIcon } from "../icons/ShareIcon";
-import { Card } from "../components/ui/Card";
 import { CreateContentModal } from "../components/CreateContentModal";
-import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
-import { useContent } from "../hooks/useContent";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { BACKEND_URL, FRONTEND_URL } from "../config";
-import copy from "copy-to-clipboard";
-import { toast } from "react-hot-toast";
-import { getDecodedToken } from "../utils/decode";
 import UserIcon from "../icons/UserIcon";
 import SearchContent from "../components/SearchContent";
 import SearchIcon from "../icons/SearchIcon";
 import LogoutIcon from "../icons/LogoutIcon";
 import Loader from "../components/Loader";
 import NotesInDetail from "../components/NotesInDetail";
+import { ContentGrid } from "../components/ContentGrid";
+import { useAuthStore } from "../stores/authStore";
+import { useUiStore } from "../stores/uiStore";
+import { useContents, useSearchContents } from "../features/content/hooks";
+import { useCreateShareLink } from "../features/share/hooks";
+import { useLogout } from "../features/auth/hooks";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import { MainShell } from "../components/layout/MainShell";
 
-export const Dashboard = () => {
-  const [type, setType] = useState("All");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [searchParam, setSearchParam] = useState("");
+export default function Dashboard() {
+  const username = useAuthStore((s) => s.username);
+  const filter = useUiStore((s) => s.filter);
+  const searchQuery = useUiStore((s) => s.searchQuery);
+  const setSidebarOpen = useUiStore((s) => s.setSidebarOpen);
+  const openCreateModal = useUiStore((s) => s.openCreateModal);
 
-  const [contentToEdit, setContentToEdit] = useState<any | null>(null);
+  const debouncedSearch = useDebouncedValue(searchQuery, 350);
+  const { data: contents = [], isLoading } = useContents();
+  const { data: searchResults, isFetching: isSearching } =
+    useSearchContents(debouncedSearch);
+  const shareMutation = useCreateShareLink();
+  const logoutMutation = useLogout();
 
-  const [showNotes, setShowNotes] = useState(false);
-  const [notesInDetailContent, setNotesInDetailContent] = useState([]);
+  const displayName = username?.split("@")[0] || "User";
 
-  function openNotesDetail(id: string) {
-    const notesContent = contents.find((content) => content._id === id);
-
-    setNotesInDetailContent(notesContent);
-    setShowNotes(true);
-  }
-
-  function closeNotes() {
-    setShowNotes(false);
-  }
-
-  const [loading, setLoading] = useState(false);
-
-  const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-
-  useEffect(() => {
-    if (!token) {
-      navigate("/signin");
-    }
-  }, []);
-
-  const user = getDecodedToken();
-
-  let contents: any[] = [];
-  let refresh = () => {};
-  let contentLoading = true;
-
-  if (token) {
-    const {
-      contents: fetchedContents,
-      refresh: refreshContents,
-      loading: fetchedLoading,
-    } = useContent();
-
-    contents = fetchedContents;
-    refresh = refreshContents;
-    contentLoading = fetchedLoading;
-  }
-
-  const filteredContent =
-    type === "All"
+  const filtered =
+    filter === "All"
       ? contents
-      : contents.filter((content) => content.type === type);
+      : contents.filter((content) => content.type === filter);
 
-  async function shareFxn() {
-    setLoading(true);
-    const token = localStorage.getItem("token");
-    const shareLink = await axios.post(
-      `${BACKEND_URL}/link/share`,
-      { share: true },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    copy(`${FRONTEND_URL}share/${shareLink.data.link}`);
-    copy(`${FRONTEND_URL}share/${shareLink.data.link}`);
-    setLoading(false);
-    toast.success("Link Copied!");
-  }
-
-  //search logic
-  useEffect(() => {
-    if (type !== "All") {
-      setSearchResults([]);
-    }
-  }, [type]);
-
-  let displayContent =
-    searchResults.length > 0 ? searchResults : filteredContent;
-
-  //@ts-ignore
-  if (searchResults.length === 0 && searchParam !== "") {
-    displayContent = [];
-  }
-
-  //edit content logic
-  const handleEdit = (contentId: string) => {
-    const dataToEdit = contents.find((content) => content._id === contentId);
-    if (dataToEdit) {
-      setContentToEdit(dataToEdit); // Set the full object to edit
-      setModalOpen(true); // Open the modal
-    }
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setContentToEdit(null);
-  };
+  const displayContent =
+    debouncedSearch.trim().length > 0 ? searchResults ?? [] : filtered;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 text-gray-900 relative font-sans">
-      {/* Sidebar */}
-      <Sidebar
-        setType={setType}
-        type={type}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
+      <Sidebar />
+      <CreateContentModal />
+      <NotesInDetail />
 
-      {/* Main content */}
-      <div className="lg:ml-56 xl:ml-64 transition-all duration-300">
-        {/* Modal */}
-        <CreateContentModal
-          open={modalOpen}
-          onClose={handleCloseModal}
-          refresh={refresh}
-          initialData={contentToEdit}
-        />
-
-        {/* showing notes in detail  */}
-        {showNotes && (
-          <div className="lg:ml-56 xl:ml-64 transition-all duration-300">
-            {/* Scrollable content area */}
-            <div className="overflow-y-auto mt-6 pr-3 flex-1">
-              <NotesInDetail
-                content={notesInDetailContent}
-                closeNotes={closeNotes}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Mobile Header with Hamburger */}
+      <MainShell>
+        {/* Mobile header */}
         <div className="lg:hidden sticky top-0 bg-white/90 backdrop-blur-lg px-4 py-3 shadow-sm border-b border-gray-200 z-30">
           <div className="flex items-center justify-between">
             <button
+              type="button"
               onClick={() => setSidebarOpen(true)}
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label="Open sidebar"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
 
             <h1 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
               <UserIcon />
-              {user ? user.username.split("@")[0] : "Not Logged In"}
+              {displayName}
             </h1>
 
             <Button
               variant="primary"
               text="Add"
               size="sm"
-              onClick={() => setModalOpen(true)}
+              onClick={openCreateModal}
               startIcon={<AddIcon size="sm" />}
             />
           </div>
         </div>
 
-        {/* Desktop Navbar */}
+        {/* Desktop navbar */}
         <div className="hidden lg:block sticky top-0 bg-white/80 backdrop-blur-lg rounded-xl mx-4 xl:mx-6 mt-4 xl:mt-6 px-4 xl:px-6 py-4 shadow-md border border-gray-200 z-30">
-          <div className="flex justify-between items-center">
-            <h1 className="text-xl xl:text-2xl font-semibold tracking-tight text-gray-800 uppercase flex gap-3 xl:gap-4 items-center">
+          <div className="flex justify-between items-center gap-4">
+            <h1 className="text-xl xl:text-2xl font-semibold tracking-tight text-gray-800 uppercase flex gap-3 xl:gap-4 items-center min-w-0">
               <UserIcon />
-              <div>
-                {user ? `${user.username.split("@")[0]}` : `Not Logged In`}
-              </div>
+              <div className="truncate">{displayName}</div>
             </h1>
 
-            {/* Buttons */}
             <div className="flex items-center gap-2 xl:gap-3">
-              {/* Search */}
               <div className="flex justify-center items-center gap-2 relative">
-                <SearchContent
-                  refresh={refresh}
-                  setSearchResults={setSearchResults}
-                  setSearchParam={setSearchParam}
-                />
-                <div className=" absolute right-0 pr-2">
+                <SearchContent />
+                <div className="absolute right-0 pr-2">
                   <SearchIcon />
                 </div>
               </div>
@@ -220,115 +97,67 @@ export const Dashboard = () => {
                 variant="primary"
                 text="Add"
                 size="md"
-                onClick={() => setModalOpen(true)}
+                onClick={openCreateModal}
                 startIcon={<AddIcon size="lg" />}
               />
-              {loading === false ? (
+              {shareMutation.isPending ? (
+                <Loader color="black" />
+              ) : (
                 <Button
                   variant="secondary"
                   text="Share"
                   size="md"
-                  onClick={shareFxn}
+                  onClick={() => shareMutation.mutate()}
                   startIcon={<ShareIcon size="lg" />}
                 />
-              ) : (
-                <Loader color={"black"} />
               )}
               <Button
                 variant="secondary"
                 text="Log out"
                 size="md"
-                onClick={() => {
-                  localStorage.clear();
-                  toast.success("Log out");
-                  navigate("/signin");
-                }}
+                onClick={() => logoutMutation.mutate()}
                 startIcon={<LogoutIcon />}
               />
             </div>
           </div>
         </div>
 
-        {/* Mobile Action Bar */}
+        {/* Mobile action bar */}
         <div className="lg:hidden sticky top-16 bg-white/90 backdrop-blur-lg mx-4 mt-4 px-4 py-3 rounded-xl shadow-sm border border-gray-200 z-20">
           <div className="flex items-center justify-between gap-3">
-            {/* Search */}
-            <div className="flex-1 flex  items-center gap-2 relative max-w-xs">
-              <SearchContent
-                refresh={refresh}
-                setSearchResults={setSearchResults}
-                setSearchParam={setSearchParam}
-              />
-              <div className="hidden md:block xl:hidden absolute right-10">
-                <SearchIcon />
-              </div>
+            <div className="flex-1 flex items-center gap-2 relative max-w-xs">
+              <SearchContent />
             </div>
-
-            {/* Action buttons */}
             <div className="flex items-center gap-2">
-              {loading === false ? (
+              {shareMutation.isPending ? (
+                <Loader color="black" />
+              ) : (
                 <Button
                   variant="secondary"
                   text="Share"
                   size="sm"
-                  onClick={shareFxn}
+                  onClick={() => shareMutation.mutate()}
                   startIcon={<ShareIcon size="sm" />}
                 />
-              ) : (
-                <Loader color={"black"} />
               )}
               <Button
                 variant="secondary"
                 text="Logout"
                 size="sm"
-                onClick={() => {
-                  localStorage.clear();
-                  navigate("/signin");
-                }}
+                onClick={() => logoutMutation.mutate()}
                 startIcon={<LogoutIcon />}
               />
             </div>
           </div>
         </div>
 
-        {/* Content Cards */}
         <div className="p-4 xl:p-6 mt-4 xl:mt-8">
-          {contentLoading ? (
-            <div className="flex justify-center items-center mt-20">
-              <Loader color={"black"} />
-            </div>
-          ) : displayContent?.length === 0 ? (
-            <div className="text-2xl sm:text-3xl xl:text-4xl text-center font-semibold text-gray-600 mt-12">
-              No Content found!
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3  gap-4 sm:gap-6 animate-fade-in">
-              {displayContent?.map(
-                ({ _id, title, link, type, tags, desc, previewImage }) => (
-                  <div
-                    key={_id}
-                    className="transition-transform duration-300 transform hover:scale-[1.02]"
-                  >
-                    <Card
-                      onEdit={handleEdit}
-                      title={title}
-                      link={link}
-                      type={type}
-                      id={_id}
-                      tags={tags}
-                      desc={desc}
-                      refresh={refresh}
-                      shared={false}
-                      previewImage={previewImage}
-                      openNotesDetail={openNotesDetail}
-                    />
-                  </div>
-                )
-              )}
-            </div>
-          )}
+          <ContentGrid
+            items={displayContent}
+            isLoading={isLoading || (debouncedSearch.trim().length > 0 && isSearching)}
+          />
         </div>
-      </div>
+      </MainShell>
     </div>
   );
-};
+}

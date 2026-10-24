@@ -1,147 +1,143 @@
-import { Request, Response } from "express";
-import { contentZodSchema } from "../zod-schema/Content";
+import { Response } from "express";
+import mongoose from "mongoose";
 import { Content } from "../models/Content";
-import { Tag } from "../models/Tag";
-import puppeteer from "puppeteer";
+import { contentZodSchema } from "../zod-schema/Content";
+import { AuthRequest } from "../types/express";
+import { resolveTagIds } from "../utils/tags";
+import { fetchPageMetadata } from "../utils/metadata";
+import { trimText } from "../constants/contentLimits";
 
-interface ContentRequest extends Request {
-  userId?: string;
+type EnrichedFields = {
+  title: string;
+  desc: string;
+  previewImage: string;
+};
+
+async function enrichWebArticle(input: {
+  type: string;
+  link?: string;
+  title?: string;
+  desc?: string;
+}): Promise<EnrichedFields> {
+  let title = trimText(input.title);
+  let desc = trimText(input.desc);
+  let previewImage = "";
+
+  if (input.type === "web articles" && input.link) {
+    const metadata = await fetchPageMetadata(input.link);
+    if (metadata) {
+      title = title || metadata.title;
+      desc = desc || metadata.description;
+      previewImage = metadata.image;
+    }
+
+    if (!title) {
+      try {
+        title = new URL(input.link).hostname.replace(/^www\./, "");
+      } catch {
+        title = "Web article";
+      }
+    }
+  }
+
+  return { title, desc, previewImage };
+}
+
+function sendMongooseValidationError(res: Response, err: unknown): boolean {
+  if (
+    err &&
+    typeof err === "object" &&
+    "name" in err &&
+    (err as { name: string }).name === "ValidationError"
+  ) {
+    const validationErr = err as mongoose.Error.ValidationError;
+    const errors: Record<string, string[]> = {};
+    for (const [key, value] of Object.entries(validationErr.errors)) {
+      errors[key] = [value.message];
+    }
+    res.status(400).json({
+      success: false,
+      msg: "Invalid content data",
+      errors,
+    });
+    return true;
+  }
+  return false;
 }
 
 export const postContentController = async (
-  req: ContentRequest,
+  req: AuthRequest,
   res: Response
-): Promise<any> => {
+): Promise<void> => {
   try {
     const { contentData } = req.body;
-
     const validation = contentZodSchema.safeParse(contentData);
+
     if (!validation.success) {
-      return res.status(411).json({
-        msg: "You have sent the wrong input",
+      res.status(400).json({
         success: false,
+        msg: "Invalid input",
+        errors: validation.error.flatten().fieldErrors,
       });
+      return;
     }
 
-    const tagTitles = contentData.tags || [];
-    const tagIds = [];
+    const data = validation.data;
+    const tagIds = await resolveTagIds(data.tags);
+    const enriched = await enrichWebArticle(data);
 
-    const normalizedTags = [
-      ...new Set(tagTitles.map((tag: string) => tag.toLowerCase().trim())),
-    ];
+    const title = trimText(data.title) || enriched.title;
+    const desc = trimText(data.desc) || enriched.desc;
 
-    for (const title of normalizedTags) {
-      let tag = await Tag.findOne({ title });
-      if (!tag) {
-        tag = await Tag.create({ title });
-      }
-      tagIds.push(tag._id);
-    }
-
-    // Web metadata logic
-    let finalTitle = contentData.title;
-    let finalDesc = contentData.desc;
-    let previewImage = "";
-
-    if (contentData.type === "web articles" && contentData.link) {
-      let browser;
-      try {
-        browser = await puppeteer.launch({
-          headless: true,
-          args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",
-          ],
-        });
-
-        const page = await browser.newPage();
-        await page.setUserAgent(
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
-        );
-        await page.setViewport({ width: 1280, height: 800 });
-
-        await page.goto(contentData.link, {
-          waitUntil: "domcontentloaded", // Wait for initial HTML to load
-          timeout: 60000,
-        });
-
-        await page.waitForSelector("body");
-
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
-
-        const metadata = await page.evaluate(() => {
-          const title = document.querySelector("title")?.innerText;
-          const description = document
-            .querySelector('meta[name="description"]')
-            ?.getAttribute("content");
-          const image = document
-            .querySelector('meta[property="og:image"]')
-            ?.getAttribute("content");
-          return { title, description, image };
-        });
-
-        finalTitle = metadata?.title || contentData.title;
-        finalDesc = metadata?.description || contentData.desc;
-        previewImage = metadata?.image || "";
-      } catch (err) {
-        console.warn(
-          `⚠️ Puppeteer failed for link: ${contentData.link}. Error:`,
-          err
-        );
-        // Fallback to user-provided data
-        finalTitle = contentData.title;
-        finalDesc = contentData.desc;
-        previewImage = "";
-      } finally {
-        if (browser) {
-          await browser.close();
-        }
-      }
+    if (data.type !== "web articles" && !title) {
+      res.status(400).json({
+        success: false,
+        msg: "Title is required",
+      });
+      return;
     }
 
     const content = await Content.create({
-      link: contentData.link,
-      desc: finalDesc,
-      type: contentData.type,
-      title: finalTitle,
-      previewImage: previewImage,
+      link: data.link || undefined,
+      desc: desc || undefined,
+      type: data.type,
+      title: title || undefined,
+      previewImage: enriched.previewImage || undefined,
       userId: req.userId,
       tags: tagIds,
     });
 
-    return res.status(200).json({
+    res.status(201).json({
       success: true,
       content,
     });
   } catch (err) {
     console.error("Error posting content:", err);
-    return res.status(500).json({
+    if (sendMongooseValidationError(res, err)) return;
+    res.status(500).json({
       success: false,
       msg: "Server error",
     });
   }
 };
 
-//get content controller
 export const getContentController = async (
-  req: ContentRequest,
+  req: AuthRequest,
   res: Response
-): Promise<any> => {
+): Promise<void> => {
   try {
-    const content = await Content.find({ userId: req.userId }).populate("tags");
-    if (!content) {
-      return res.status(403).json({
-        msg: "No content found, Pls add some",
-      });
-    }
+    const content = await Content.find({ userId: req.userId })
+      .populate("tags")
+      .sort({ createdAt: -1 })
+      .lean();
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       data: content,
     });
   } catch (err) {
-    return res.status(500).json({
+    console.error("Error fetching content:", err);
+    res.status(500).json({
       success: false,
       msg: "Server error",
     });
@@ -149,32 +145,40 @@ export const getContentController = async (
 };
 
 export const deleteContentController = async (
-  req: ContentRequest,
+  req: AuthRequest,
   res: Response
-): Promise<any> => {
+): Promise<void> => {
   try {
     const { contentId } = req.body;
-    const userId = req.userId;
-    const isContent = await Content.findById({ _id: contentId });
-    if (!isContent) {
-      return res.status(403).json({
+
+    if (!contentId || !mongoose.isValidObjectId(contentId)) {
+      res.status(400).json({
         success: false,
-        msg: "Content of the provided content id not found",
+        msg: "Valid contentId is required",
       });
+      return;
     }
-    await Content.deleteMany({
+
+    const deleted = await Content.findOneAndDelete({
       _id: contentId,
-      userId: userId,
+      userId: req.userId,
     });
 
-    return res.status(200).json({
+    if (!deleted) {
+      res.status(404).json({
+        success: false,
+        msg: "Content not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
       success: true,
       msg: "Content deleted successfully",
     });
   } catch (err) {
-    console.log(err);
-
-    return res.status(500).json({
+    console.error("Error deleting content:", err);
+    res.status(500).json({
       success: false,
       msg: "Server error",
     });
@@ -182,63 +186,57 @@ export const deleteContentController = async (
 };
 
 export const getFilteredContentController = async (
-  req: ContentRequest,
+  req: AuthRequest,
   res: Response
-): Promise<any> => {
+): Promise<void> => {
   try {
-    const { query } = req.query;
-    const userId = req.userId;
+    const query = String(req.query.query || "").trim();
 
     if (!query) {
-      return res
-        .status(400)
-        .json({ success: false, msg: "Please enter a search term." });
+      res.status(400).json({
+        success: false,
+        msg: "Please enter a search term.",
+      });
+      return;
     }
 
-    const searchText = String(query).toLowerCase();
-
-    // 1. Get contents where title matches AND userId matches
-    const titleMatched = await Content.find({
-      userId: req.userId,
-      title: { $regex: searchText, $options: "i" },
-    }).populate("tags");
-
-    // 2. Get all contents for that user and filter those where tag titles match
-    const allContents = await Content.find({ userId: req.userId }).populate(
-      "tags"
-    );
-
-    const tagMatched = allContents.filter((content) =>
-      //@ts-ignore
-      (content.tags as { title: string }[]).some((tag) =>
-        tag.title.toLowerCase().includes(searchText)
-      )
-    );
-
-    // 3. Merge both title-matched and tag-matched results
-    const merged = [...titleMatched, ...tagMatched];
-
-    // 4. Remove duplicates (same content can match title + tag)
-    const uniqueContent = [];
-    const seen = new Set();
-
-    for (const item of merged) {
-      const id = item._id.toString();
-      if (!seen.has(id)) {
-        seen.add(id);
-        uniqueContent.push(item);
-      }
+    if (query.length > 100) {
+      res.status(400).json({
+        success: false,
+        msg: "Search term is too long.",
+      });
+      return;
     }
 
-    // 5. Send response
-    return res.status(200).json({
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(escaped, "i");
+
+    const content = await Content.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(req.userId) } },
+      {
+        $lookup: {
+          from: "tags",
+          localField: "tags",
+          foreignField: "_id",
+          as: "tags",
+        },
+      },
+      {
+        $match: {
+          $or: [{ title: regex }, { desc: regex }, { "tags.title": regex }],
+        },
+      },
+      { $sort: { createdAt: -1 } },
+      { $limit: 100 },
+    ]);
+
+    res.status(200).json({
       success: true,
-      content: uniqueContent,
+      content,
     });
   } catch (err) {
-    console.log(err);
-
-    return res.status(500).json({
+    console.error("Error searching content:", err);
+    res.status(500).json({
       success: false,
       msg: "Server error",
     });
@@ -246,131 +244,81 @@ export const getFilteredContentController = async (
 };
 
 export const updateContentController = async (
-  req: ContentRequest,
+  req: AuthRequest,
   res: Response
-): Promise<any> => {
+): Promise<void> => {
   try {
     const contentId = req.params.id;
-    const { contentData } = req.body;
 
-    const userId = req.userId;
-    const isContent = await Content.findById({
+    if (!contentId || !mongoose.isValidObjectId(contentId)) {
+      res.status(400).json({
+        success: false,
+        msg: "Valid content id is required",
+      });
+      return;
+    }
+
+    const existing = await Content.findOne({
       _id: contentId,
-      userId: userId,
+      userId: req.userId,
     });
 
-    if (!isContent) {
-      return res.status(403).json({
+    if (!existing) {
+      res.status(404).json({
         success: false,
-        msg: "Content of the provided content id not found",
+        msg: "Content not found",
       });
+      return;
     }
 
-    const validation = contentZodSchema.safeParse(contentData);
+    const validation = contentZodSchema.safeParse(req.body.contentData);
     if (!validation.success) {
-      return res.status(411).json({
-        msg: "You have sent the wrong input",
+      res.status(400).json({
         success: false,
+        msg: "Invalid input",
+        errors: validation.error.flatten().fieldErrors,
       });
+      return;
     }
 
-    const tagTitles = contentData.tags || [];
-    const tagIds = [];
+    const data = validation.data;
+    const tagIds = await resolveTagIds(data.tags);
 
-    const normalizedTags = [
-      ...new Set(tagTitles.map((tag: string) => tag.toLowerCase().trim())),
-    ];
+    const linkChanged =
+      data.type === "web articles" && data.link && data.link !== existing.link;
 
-    for (const title of normalizedTags) {
-      let tag = await Tag.findOne({ title });
-      if (!tag) {
-        tag = await Tag.create({ title });
-      }
-      tagIds.push(tag._id);
+    let title = trimText(data.title) || existing.title || "";
+    let desc = trimText(data.desc) || existing.desc || "";
+    let previewImage = existing.previewImage || "";
+
+    if (linkChanged || (data.type === "web articles" && !previewImage)) {
+      const enriched = await enrichWebArticle(data);
+      title = trimText(data.title) || enriched.title || title;
+      desc = trimText(data.desc) || enriched.desc || desc;
+      previewImage = enriched.previewImage || previewImage;
     }
 
-    // Web metadata logic
-    let finalTitle = contentData.title;
-    let finalDesc = contentData.desc;
-    let previewImage = "";
-
-    if (contentData.type === "web articles" && contentData.link) {
-      let browser;
-      try {
-        browser = await puppeteer.launch({
-          headless: true,
-          args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",
-          ],
-        });
-
-        const page = await browser.newPage();
-        await page.setUserAgent(
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
-        );
-        await page.setViewport({ width: 1280, height: 800 });
-
-        await page.goto(contentData.link, {
-          waitUntil: "domcontentloaded", // Wait for initial HTML to load
-          timeout: 60000,
-        });
-
-        await page.waitForSelector("body");
-
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
-
-        const metadata = await page.evaluate(() => {
-          const title = document.querySelector("title")?.innerText;
-          const description = document
-            .querySelector('meta[name="description"]')
-            ?.getAttribute("content");
-          const image = document
-            .querySelector('meta[property="og:image"]')
-            ?.getAttribute("content");
-          return { title, description, image };
-        });
-
-        finalTitle = metadata?.title || contentData.title;
-        finalDesc = metadata?.description || contentData.desc;
-        previewImage = metadata?.image || "";
-      } catch (err) {
-        console.warn(
-          `⚠️ Puppeteer failed for link: ${contentData.link}. Error:`,
-          err
-        );
-        // Fallback to user-provided data
-        finalTitle = contentData.title;
-        finalDesc = contentData.desc;
-        previewImage = "";
-      } finally {
-        if (browser) {
-          await browser.close();
-        }
-      }
-    }
-
-    const content = await Content.findByIdAndUpdate(
-      { _id: contentId },
+    const content = await Content.findOneAndUpdate(
+      { _id: contentId, userId: req.userId },
       {
-        link: contentData.link,
-        desc: finalDesc,
-        type: contentData.type,
-        title: finalTitle,
-        previewImage: previewImage,
-        userId: req.userId,
+        link: data.link || undefined,
+        desc: desc || undefined,
+        type: data.type,
+        title: title || undefined,
+        previewImage: previewImage || undefined,
         tags: tagIds,
-      }
-    );
+      },
+      { new: true, runValidators: true }
+    ).populate("tags");
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       content,
     });
   } catch (err) {
-    console.error("Error posting content:", err);
-    return res.status(500).json({
+    console.error("Error updating content:", err);
+    if (sendMongooseValidationError(res, err)) return;
+    res.status(500).json({
       success: false,
       msg: "Server error",
     });
