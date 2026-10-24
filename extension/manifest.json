@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Keep It",
+  "version": "0.1.0",
+  "description": "Save YouTube, Instagram, X, and web links to Keep It in one click.",
+  "action": {
+    "default_title": "Save to Keep It",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["activeTab", "storage", "tabs"],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*"
+  ]
+}

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Keep It</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="brand">
+        <img src="icons/icon48.png" alt="" width="22" height="22" />
+        <span>Keep It</span>
+      </div>
+      <button id="logoutBtn" class="link-btn hidden" type="button">Log out</button>
+    </header>
+
+    <p id="status" class="status" role="status"></p>
+
+    <!-- Sign in -->
+    <section id="authView" class="view">
+      <p class="hint">Sign in with your Keep It account to save from any tab.</p>
+      <form id="signinForm" class="form">
+        <label>
+          Username
+          <input id="username" name="username" autocomplete="username" required />
+        </label>
+        <label>
+          Password
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+        </label>
+        <button id="signinBtn" type="submit">Sign in</button>
+      </form>
+      <p class="footer-note">
+        No account?
+        <a id="signupLink" href="#" target="_blank" rel="noreferrer">Sign up on the site</a>
+      </p>
+    </section>
+
+    <!-- Save -->
+    <section id="saveView" class="view hidden">
+      <form id="saveForm" class="form">
+        <div class="type-row">
+          <span class="label">Type</span>
+          <span id="typeBadge" class="badge">web articles</span>
+        </div>
+
+        <label>
+          Link
+          <input id="link" name="link" type="url" required />
+        </label>
+
+        <label>
+          Title
+          <input id="title" name="title" maxlength="200" />
+        </label>
+
+        <label>
+          Note <span class="optional">(optional)</span>
+          <textarea id="desc" name="desc" rows="2" maxlength="2000"></textarea>
+        </label>
+
+        <label>
+          Tags <span class="optional">(comma separated)</span>
+          <input id="tags" name="tags" placeholder="design, ideas" />
+        </label>
+
+        <button id="saveBtn" type="submit">Save to Keep It</button>
+      </form>
+    </section>
+
+    <script src="config.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

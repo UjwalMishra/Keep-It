@@ -30,8 +30,13 @@ const allowedOrigins = new Set(
 app.use(
   cors({
     origin(origin, callback) {
-      // Allow non-browser clients (no Origin) and allowlisted frontends
-      if (!origin || allowedOrigins.has(origin)) {
+      // Allow non-browser clients (no Origin), allowlisted frontends,
+      // and Chrome extensions (popup / service worker fetches).
+      if (
+        !origin ||
+        allowedOrigins.has(origin) ||
+        origin.startsWith("chrome-extension://")
+      ) {
         callback(null, true);
         return;
       }
